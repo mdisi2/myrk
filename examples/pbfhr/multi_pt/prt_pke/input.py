@@ -150,6 +150,7 @@ h_cool = ConvectiveModel(
     units.meter**2,
     mat=cool,
     model='constant')
+
 m_flow = 976.0 * units.kg / units.seconds
 t_inlet = units.Quantity(600.0, units.degC)
 
