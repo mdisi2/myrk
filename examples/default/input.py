@@ -125,7 +125,7 @@ spectrum = "thermal"
 feedback = True
 
 # External Reactivity
-from reactivity_insertion import StepReactivityInsertion
+from pyrk.reactivity_insertion import StepReactivityInsertion
 rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
                                   rho_final=0.005 * units.delta_k)
