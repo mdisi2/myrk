@@ -2,6 +2,8 @@ from pyrk.materials.material import Material
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.inp import validation
+from pyrk.viscosity_model import ViscosityModel
+from pyrk.conductive_model import ConductiveModel
 
 
 class LiquidMaterial(Material):
@@ -9,10 +11,10 @@ class LiquidMaterial(Material):
 
     def __init__(self,
                  name=None,
-                 k=0 * units.watt / units.meter / units.kelvin,
+                 km=ConductiveModel,
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel(),
-                 mu=0 * units.pascal * units.seconds):
+                 vm=ViscosityModel()):
         """Initalizes a material
 
         :param name: The name of the component (i.e., "fuel" or "cool")
@@ -26,6 +28,17 @@ class LiquidMaterial(Material):
         :param mu: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
         :type mu: float, pint.unit.Quantity :math:`Pa.s`
         """
-        Material.__init__(self, name, k, cp, dm)
-        self.mu = mu.to('pascal*seconds')
-        validation.validate_ge("mu", mu, 0 * units.pascal * units.seconds)
+        Material.__init__(self, name, km, cp, dm)
+        self.vm = vm
+
+    def mu(self, temp):
+        """
+        The dynamic viscosity of this material as a function of temperature.
+
+        :param temp: the temperature at which to query the dynamic viscosity
+        :type temp: float, pint.unit.Quantity :math:`K`
+        :return: the dynamic viscosity of this component
+        :rtype: float, in units of :math:`Pa.s`
+        """
+        ret = self.vm.mu(temp)
+        return ret
