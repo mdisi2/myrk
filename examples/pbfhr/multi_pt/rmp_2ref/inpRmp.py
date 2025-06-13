@@ -111,7 +111,7 @@ ref_rho = [0.084349, 0.168983]
 feedback = True
 
 # External Reactivity
-from reactivity_insertion import RampReactivityInsertion
+from pyrk.reactivity_insertion import RampReactivityInsertion
 rho_ext = RampReactivityInsertion(timer=ti,
                                   t_start=t_feedback + 10.0 * units.seconds,
                                   t_end=t_feedback + 20.0 * units.seconds,
