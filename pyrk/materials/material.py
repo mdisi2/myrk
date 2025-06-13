@@ -1,6 +1,7 @@
 from pyrk.inp import validation
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
+from pyrk.conductive_model import ConductivityModel
 
 
 class Material(object):
@@ -9,7 +10,7 @@ class Material(object):
 
     def __init__(self,
                  name=None,
-                 k=0 * units.watt / units.meter / units.kelvin,
+                 km=ConductivityModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel()):
         """Initalizes a material
@@ -24,13 +25,24 @@ class Material(object):
         :type dm: DensityModel object
         """
         self.name = name
-        self.k = k.to('watt/meter/kelvin')
-        validation.validate_ge("k", k, 0 * units.watt /
-                               units.meter / units.kelvin)
+        self.km = km
         self.cp = cp.to('joule/kg/kelvin')
         validation.validate_ge(
             "cp", cp, 0 * units.joule / units.kg / units.kelvin)
         self.dm = dm
+
+    def k(self, temp):
+        """
+        The thermal conductivity of this material as a function of temperature.
+
+        :param temp: the temperature at which to query the thermal conductivity
+        :type temp: float, pint.unit.Quantity :math:`K`
+        :return: the thermal conductivity of this component
+        :rtype: float, in units of :math:`watt/meter/K`
+        """
+        ret = self.km.k(temp)
+        return ret
+
 
     def rho(self, temp):
         """
