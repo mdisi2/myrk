@@ -1,9 +1,9 @@
 from pyrk.materials.material import Material
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
-from pyrk.inp import validation
 from pyrk.viscosity_model import ViscosityModel
 from pyrk.conductive_model import ConductiveModel
+from pyrk.inp import validation
 
 
 class LiquidMaterial(Material):
@@ -11,7 +11,7 @@ class LiquidMaterial(Material):
 
     def __init__(self,
                  name=None,
-                 km=ConductiveModel,
+                 km=ConductiveModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel(),
                  vm=ViscosityModel()):
@@ -19,14 +19,14 @@ class LiquidMaterial(Material):
 
         :param name: The name of the component (i.e., "fuel" or "cool")
         :type name: str.
-        :param k: The thermal conductivity of the component
-        :type k: float, pint.unit.Quantity :math:'watt/meter/K'
+        :param km: The thermal conductivity of the component
+        :type km: ConductiveModel object, pint.unit.Quantity :math:'watt/meter/K'
         :param cp: specific heat capacity, :math:`c_p`, in :math:`J/kg-K`
         :type cp: float, pint.unit.Quantity :math:`J/kg-K`
         :param dm: The density of the material
         :type dm: DensityModel object
-        :param mu: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
-        :type mu: float, pint.unit.Quantity :math:`Pa.s`
+        :param vm: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
+        :type vm: ViscosityModel object, pint.unit.Quantity :math:`Pa.s`
         """
         Material.__init__(self, name, km, cp, dm)
         self.vm = vm

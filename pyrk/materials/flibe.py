@@ -1,6 +1,8 @@
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.materials.liquid_material import LiquidMaterial
+from pyrk.conductive_model import ConductiveModel
+from pyrk.viscosity_model import ViscosityModel
 
 
 class Flibe(LiquidMaterial):
@@ -30,27 +32,38 @@ class Flibe(LiquidMaterial):
         """
         LiquidMaterial.__init__(self,
                                 name=name,
-                                k=self.thermal_conductivity(),
+                                km=self.thermal_conductivity(),
                                 cp=self.specific_heat_capacity(),
-                                dm=self.density())
+                                dm=self.density(),
+                                vm=self.dynamic_viscosity())
 
     def thermal_conductivity(self):
-        """FLiBe thermal conductivity in [W/m-K]
-        TODO:k= 0.7662+0.0005T (T in celsius)
         """
-        return 1.0 * units.watt / (units.meter * units.kelvin)
+        FLiBe thermal conductivity in [W/m-K] as a function of T (celcius)
+        """
+        return ConductiveModel(a = 0.7662 * units.watt / (units.meter * units.kelvin),
+                               b = 0.0005 * units.watt / (units.meter * units.kelvin * units.celcius),
+                               model="linear")
 
     def specific_heat_capacity(self):
-        """Specific heat capacity of flibe [J/kg/K]
+        """
+        Specific heat capacity of flibe [J/kg/K]
         """
         return 2415.78 * units.joule / (units.kg * units.kelvin)
 
     def density(self):
         """
         FLiBe density as a funciton of T. [kg/m^3]
-
         """
         return DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /
                             (units.meter**3) / units.kelvin,
                             model="linear")
+    
+    def dynamic_viscosity(self):
+        """
+        FLiBe dynamic viscosity as a function of T. [Pa*s]
+        """
+        return ViscosityModel(a=0.000116 * units.pa * units.second,
+                              b=3755 * units.kelvin,
+                              mode="exponential")

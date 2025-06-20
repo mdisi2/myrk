@@ -1,7 +1,7 @@
 from pyrk.inp import validation
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
-from pyrk.conductive_model import ConductivityModel
+from pyrk.conductive_model import ConductiveModel
 
 
 class Material(object):
@@ -10,15 +10,15 @@ class Material(object):
 
     def __init__(self,
                  name=None,
-                 km=ConductivityModel(),
+                 km=ConductiveModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel()):
         """Initalizes a material
 
         :param name: The name of the component (i.e., "fuel" or "cool")
         :type name: str.
-        :param k: The thermal conductivity of the component
-        :type k: float, pint.unit.Quantity :math:'watt/meter/K'
+        :param km: The thermal conductivity of the component
+        :type km: ConductiveModel object, pint.unit.Quantity :math:'watt/meter/K'
         :param cp: specific heat capacity, :math:`c_p`, in :math:`J/kg-K`
         :type cp: float, pint.unit.Quantity :math:`J/kg-K`
         :param dm: The density of the material

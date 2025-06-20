@@ -21,7 +21,7 @@ class ConductiveModel(object):
         :type b: float
         """
         self.a = a.to(units.watt / units.kelvin / units.meter)
-        self.b = b.to(units.watt / pow(units.kelvin, 2) / units.meter)
+        self.b = b.to(units.watt / units.kelvin / units.meter / units.celcius)
 
         self.implemented = {'constant': self.constant,
                             'linear': self.linear}
@@ -53,14 +53,16 @@ class ConductiveModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
-        return self.a
+        return 1 * units.watt / units.meter / units.kelvin
     
     def linear(self, temp=0.0 * units.kelvin):
         """
-        Returns a linear thermal conductivity, a + b * temp.
+        Returns a linear thermal conductivity, a + b * temp (in celcius).
 
         :param temp: The temperature of the object
         :type temp: float.
         """
-        ret = self.a + self.b * temp.to(units.kelvin)
+
+        T_celcius = (temp.magnitude - 273.15) * units.celcius
+        ret = self.a + self.b * T_celcius
         return ret 
