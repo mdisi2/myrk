@@ -9,7 +9,7 @@ km_constant = conductive_model.ConductiveModel(a=alpha, b=beta, model="constant"
 km_linear = conductive_model.ConductiveModel(a=alpha, b=beta, model="linear")
 
 km_flibe = conductive_model.ConductiveModel(a = 0.7662 * units.watt / (units.meter * units.kelvin),
-                               b = 0.0005 * units.watt / (units.meter * units.kelvin * units.degC),
+                               b = 0.0005 * units.watt / (units.meter * units.kelvin * units.kelvin),
                                model="linear")
 
 

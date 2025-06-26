@@ -8,9 +8,9 @@ beta = 3000 * units.kelvin
 vm_constant = viscosity_model.ViscosityModel(a=alpha, b=beta, model="constant")
 vm_exponential = viscosity_model.ViscosityModel(a=alpha, b=beta, model="exponential")
 
-vm_flibe = viscosity_model.ViscosityModel(a=0.000116 * units.pa * units.second,
+vm_flibe = viscosity_model.ViscosityModel(a=0.000116 * units.pascal * units.second,
                               b=3755 * units.kelvin,
-                              mode="exponential")
+                              model="exponential")
 
 
 def test_default_constructor():
