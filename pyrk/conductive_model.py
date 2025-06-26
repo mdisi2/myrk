@@ -8,7 +8,7 @@ class ConductiveModel(object):
 
     def __init__(self,
                  a=0 * units.watt / units.kelvin / units.meter,
-                 b=0 * units.watt / pow(units.kelvin, 2) / units.meter,
+                 b=0 * units.watt / units.kelvin / units.meter / units.degC,
                  model="linear"):
         """
         Initializes the ConductiveModel object.
