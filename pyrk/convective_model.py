@@ -32,9 +32,9 @@ class ConvectiveModel(object):
         :type model: string
         """
         self.h0 = h0
-        #self.k = mat.k
+        self.km = mat.km
         self.cp = mat.cp
-        #self.mu = mat.mu
+        self.vm = mat.vm
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale
@@ -68,7 +68,7 @@ class ConvectiveModel(object):
         """
         return self.implemented[self.model](rho.to(units.kg / units.meter**3),
                                             mu.to(units.pascal * units.second),
-                                            k.to(units.watt / units.kelvin / units.meter))
+                                            k.to(units.watt / units.kelvin / unit.meter))
 
     def constant(self, rho, mu, k):
         """

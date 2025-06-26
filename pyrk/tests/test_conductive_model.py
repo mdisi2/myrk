@@ -3,7 +3,7 @@ from pyrk import conductive_model
 
 u_cond = units.watt / units.meter / units.kelvin
 alpha = 2.0 * u_cond
-beta = 3.0 * u_cond / units.deg_C
+beta = 3.0 * u_cond / units.kelvin
 
 km_constant = conductive_model.ConductiveModel(a=alpha, b=beta, model="constant")
 km_linear = conductive_model.ConductiveModel(a=alpha, b=beta, model="linear")
@@ -16,7 +16,7 @@ km_flibe = conductive_model.ConductiveModel(a = 0.7662 * units.watt / (units.met
 def test_default_constructor():
     km = conductive_model.ConductiveModel()
     assert km.a == 0 * u_cond
-    assert km.b == 0 * u_cond / units.degC
+    assert km.b == 0 * u_cond / units.kelvin
     assert km.model == 'linear'
     assert km.k() == km.a
 
@@ -38,7 +38,7 @@ def test_constant():
 
 def test_flibe():
     a_flibe =  0.7662 * u_cond
-    b_flibe = 0.0005 * u_cond / units.degC
+    b_flibe = 0.0005 * u_cond / units.kelvin
     assert km_flibe.model == 'linear'
     assert km_flibe.k(0 * units.kelvin) == a_flibe
     assert km_flibe.k() == a_flibe
