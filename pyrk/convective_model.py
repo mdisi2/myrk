@@ -68,7 +68,7 @@ class ConvectiveModel(object):
         """
         return self.implemented[self.model](rho.to(units.kg / units.meter**3),
                                             mu.to(units.pascal * units.second),
-                                            k.to(units.watt / units.kelvin / unit.meter))
+                                            k.to(units.watt / units.kelvin / units.meter))
 
     def constant(self, rho, mu, k):
         """

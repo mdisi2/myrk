@@ -68,8 +68,12 @@ class THComponent(object):
         self.dm = mat.dm
 
         # Liquid Material Specific Attributes
-        self.vm = mat.vm if hasattr(mat, "vm") else None
-        self.hm = hm # if (self.name='cool') else None
+        if isinstance(mat, LiquidMaterial):
+            self.vm = mat.vm
+            self.hm = hm 
+        else:
+            self.vm = None
+            self.hm = None
 
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
