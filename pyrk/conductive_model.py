@@ -9,7 +9,7 @@ class ConductiveModel(object):
     def __init__(self,
                  a=0 * units.watt / units.kelvin / units.meter,
                  b=0 * units.watt / pow(units.kelvin, 2) / units.meter,
-                 model="constant"):
+                 model="linear"):
         """
         Initializes the ConductiveModel object.
 
@@ -21,7 +21,7 @@ class ConductiveModel(object):
         :type b: float
         """
         self.a = a.to(units.watt / units.kelvin / units.meter)
-        self.b = b.to(units.watt / units.kelvin / units.meter / units.celcius)
+        self.b = b.to(units.watt / units.kelvin / units.meter / units.degC)
 
         self.implemented = {'constant': self.constant,
                             'linear': self.linear}
@@ -63,6 +63,6 @@ class ConductiveModel(object):
         :type temp: float.
         """
 
-        T_celcius = (temp.magnitude - 273.15) * units.celcius
+        T_celcius = (temp.magnitude - 273.15) * units.degC
         ret = self.a + self.b * T_celcius
         return ret 

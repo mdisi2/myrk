@@ -6,6 +6,7 @@ from pyrk.timer import Timer
 import math
 from pyrk.materials.material import Material
 from pyrk.convective_model import ConvectiveModel
+from pyrk.materials.liquid_material import LiquidMaterial
 
 
 class THComponent(object):
@@ -25,7 +26,8 @@ class THComponent(object):
                  power_tot=0 * units.watt,
                  sph=False,
                  ri=0 * units.meter,
-                 ro=0 * units.meter):
+                 ro=0 * units.meter,
+                 hm=None):
         """Initalizes a thermal hydraulic component.
         A thermal-hydraulic component will be treated as one "lump" in the
         lumped capacitance model.
@@ -55,13 +57,20 @@ class THComponent(object):
         :param ro: outer radius of the sph/annular component,
         ro=radius for sphere
         :type ro: float
+        :param hm: convection model
+        :type hm: model
         """
         self.name = name
         self.vol = vol.to('meter**3')
         self.mat = mat
-        self.k = mat.k
+        self.km = mat.km
         self.cp = mat.cp
         self.dm = mat.dm
+
+        # Liquid Material Specific Attributes
+        self.vm = mat.vm if hasattr(mat, "vm") else None
+        self.hm = hm # if (self.name='cool') else None
+
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                          dtype=float), 'kelvin')
@@ -133,10 +142,54 @@ class THComponent(object):
         :param timestep: the timestep at which to query the temperature
         :type timestep: int
         :return: the density of this component
-        :rtype: float, in units of $kg/m^3$
+        :type: float, in units of $kg/m^3$
         """
         ret = self.dm.rho(self.temp(timestep))
         return ret
+    
+    def k(self,timestep):
+        """the thermal conductivity of this component's materials
+        
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        :return: the thermal conductivity of this compoenet
+        :type: float, in units of $watt/meter/kelvin$
+        """
+
+        ret = self.km.k(self.temp(timestep))
+        return ret
+    
+    def mu(self,timestep):
+         """the dynamic viscosity of this components materials
+        
+         :param timestep: the timestep at which to query the temperature
+         :type timestep: int
+         :return: the dynamic viscosity of this component
+         :type: float, in units $Pa\cdot s$
+         """
+         if self.vm is None:
+            return None
+         else:
+            ret = self.vm.mu(self.temp(timestep))
+            return ret
+         
+    def h(self, timestep):
+        """the temperature dependent Wakao correction for heat
+        convection coefficient, h
+
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        :return: the heat convection coefficient, h
+        :type: float, in units $watt/meter**2/kelvin$
+        """
+        if self.hm is None:
+            return None
+        else:
+            rho_t = self.rho(timestep)
+            mu_t = self.mu(timestep)
+            k_t = self.k(timestep)
+            ret = self.hm.h(rho=rho_t, mu=mu_t, k=k_t)
+            return ret
 
     def update_temp(self, timestep, temp):
         """Updates the temperature
@@ -281,7 +334,7 @@ class THComponent(object):
         rec = {'component': self.name,
                'vol': self.vol.magnitude,
                'matname': self.mat.name,
-               'k': self.k.magnitude,
+               #'k': self.k.magnitude, no longer using floats
                'cp': self.cp.magnitude,
                'T0': self.T0.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
@@ -298,7 +351,7 @@ class THComponent(object):
                'component': self.name,
                'temp': self.temp(timestep).magnitude,
                'density': self.rho(timestep).magnitude,
-               'k': self.k.magnitude,
+               'k': self.k(timestep).magnitude,
                'cp': self.cp.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
                'heatgen': self.heatgen,

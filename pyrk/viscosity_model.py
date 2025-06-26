@@ -10,7 +10,7 @@ class ViscosityModel(object):
     def __init__(self,
                  a=0 * units.pascal * units.second,
                  b=0 * units.kelvin,
-                 model="constant"):
+                 model="exponential"):
         """
         Initializes the ViscosityModel object.
 

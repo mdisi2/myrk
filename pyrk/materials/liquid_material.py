@@ -7,7 +7,11 @@ from pyrk.inp import validation
 
 
 class LiquidMaterial(Material):
-    ''' subclass of material for liquid'''
+    ''' 
+    Subclass of material for liquid.
+    Has an additional attribute for 
+    dynamic viscosity (mu).
+        '''
 
     def __init__(self,
                  name=None,
