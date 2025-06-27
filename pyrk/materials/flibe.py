@@ -42,7 +42,7 @@ class Flibe(LiquidMaterial):
         FLiBe thermal conductivity in [W/m-K] as a function of T (celcius)
         """
         return ConductivityModel(a = 0.7662 * units.watt / (units.meter * units.kelvin),
-                               b = 0.0005 * units.watt / (units.meter * units.kelvin * units.degC),
+                               b = 0.0005 * units.watt / (units.meter * units.kelvin * units.kelvin),
                                model="linear")
 
     def specific_heat_capacity(self):
