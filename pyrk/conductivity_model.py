@@ -1,6 +1,6 @@
 from pyrk.utilities.ur import units
 
-class ConductiveModel(object):
+class ConductivityModel(object):
     """
     This class handles the temperature dependent thermal conductivity
     with the function k(temp).
@@ -11,7 +11,7 @@ class ConductiveModel(object):
                  b=0 * units.watt / units.kelvin / units.meter / units.kelvin,
                  model="linear"):
         """
-        Initializes the ConductiveModel object.
+        Initializes the ConductivityModel object.
 
         :param model: The keyword for a model type.
         :type model: string
@@ -30,9 +30,9 @@ class ConductiveModel(object):
             self.model = model
         else:
             self.model = NotImplemented
-            msg = "Conductive model type "
+            msg = "Conductivity model type "
             msg += model
-            msg += " is not an implemented conductive model. Options are:"
+            msg += " is not an implemented conductivity model. Options are:"
             for m in self.implemented.keys():
                 msg += m
             raise ValueError(msg)

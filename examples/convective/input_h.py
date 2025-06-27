@@ -16,7 +16,7 @@ from pyrk.materials.material import Material
 from pyrk.materials.liquid_material import LiquidMaterial
 from pyrk.convective_model import ConvectiveModel
 from pyrk.density_model import DensityModel
-from pyrk.conductive_model import ConductiveModel
+from pyrk.conductivity_model import ConductivityModel
 from pyrk.timer import Timer
 
 #############################################
@@ -112,7 +112,7 @@ rho_ext = StepReactivityInsertion(timer=ti,
 nsteps = 5000
 
 # Moderator Initialization
-k_mod = ConductiveModel(a=17 * units.watt 
+k_mod = ConductivityModel(a=17 * units.watt 
                         / (units.meter * units.kelvin), model="constant")
 cp_mod = 1650.0 * units.joule / (units.kg * units.kelvin)
 rho_mod = DensityModel(a=1740. * units.kg / (units.meter**3), model="constant")
@@ -120,7 +120,7 @@ Moderator = Material('mod', k_mod, cp_mod, rho_mod)
 
 
 # Fuel Initialization
-k_fuel = ConductiveModel(a=15*units.watt 
+k_fuel = ConductivityModel(a=15*units.watt 
                          /(units.meter * units.kelvin), model="constant")
 cp_fuel = 1818.0 * units.joule / units.kg / units.kelvin
 rho_fuel = DensityModel(a=2220.0 * units.kg /
@@ -129,7 +129,7 @@ Fuel = Material('fuel', k_fuel, cp_fuel, rho_fuel)
 
 
 # Shell Initialization
-k_shell = ConductiveModel(a=17*units.watt 
+k_shell = ConductivityModel(a=17*units.watt 
                           /(units.meter * units.kelvin), model="constant")
 cp_shell = 1650.0 * units.joule / (units.kg * units.kelvin)
 rho_shell = DensityModel(a=1740. * units.kg /

@@ -1,7 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.materials.liquid_material import LiquidMaterial
-from pyrk.conductive_model import ConductiveModel
+from pyrk.conductivity_model import ConductivityModel
 from pyrk.viscosity_model import ViscosityModel
 
 
@@ -41,7 +41,7 @@ class Flibe(LiquidMaterial):
         """
         FLiBe thermal conductivity in [W/m-K] as a function of T (celcius)
         """
-        return ConductiveModel(a = 0.7662 * units.watt / (units.meter * units.kelvin),
+        return ConductivityModel(a = 0.7662 * units.watt / (units.meter * units.kelvin),
                                b = 0.0005 * units.watt / (units.meter * units.kelvin * units.degC),
                                model="linear")
 

@@ -1,7 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.convective_model import ConvectiveModel
 from pyrk.materials.liquid_material import LiquidMaterial
-from pyrk.conductive_model import ConductiveModel
+from pyrk.conductivity_model import ConductivityModel
 from pyrk.viscosity_model import ViscosityModel
 from pyrk.density_model import DensityModel
 
@@ -17,7 +17,7 @@ def test_constant_model():
 
 def test_wakao_model():
       
-      k = ConductiveModel(a = 2 * units.watt / units.meter / units.kelvin,
+      k = ConductivityModel(a = 2 * units.watt / units.meter / units.kelvin,
                           b = 3 * units.watt / units.meter / units.kelvin / units.kelvin,
                           model='constant')
       mu = ViscosityModel(a=0.0001 * units.pascal * units.second,
