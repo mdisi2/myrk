@@ -66,4 +66,4 @@ class Flibe(LiquidMaterial):
         """
         return ViscosityModel(a=0.000116 * units.pa * units.second,
                               b=3755 * units.kelvin,
-                              mode="exponential")
+                              model="exponential")
