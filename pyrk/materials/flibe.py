@@ -64,6 +64,6 @@ class Flibe(LiquidMaterial):
         """
         FLiBe dynamic viscosity as a function of T. [Pa*s]
         """
-        return ViscosityModel(a=0.000116 * units.pa * units.second,
+        return ViscosityModel(a=0.000116 * units.pascal * units.second,
                               b=3755 * units.kelvin,
                               model="exponential")
