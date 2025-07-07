@@ -154,6 +154,8 @@ h_cool = ConvectiveModel(
     length_scale=length_scale_cool,
     model='wakao')
 
+k_cool = Flibe().thermal_conductivity
+
 t_inlet = units.Quantity(600.0, units.degC)
 
 mod = th.THComponent(name="mod",
@@ -196,7 +198,9 @@ comp_list.extend(fuel.mesh(l))
 comp_list.extend(shell.mesh(l))
 pebble = th.THSuperComponent('pebble', t_shell, comp_list, timer=ti)
 # Add convective boundary condition to the pebble
-pebble.add_conv_bc('cool', h=h_cool)
+pebble.add_conv_bc('cool', h=h_cool, k=k_cool)
+
+#needs to be updated since h is no longer a float/constant ?
 
 cool = th.THComponent(name="cool",
                       mat=Cool,

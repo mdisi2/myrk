@@ -60,7 +60,7 @@ class THSystem(object):
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
                                             h=d["h"].h(env.rho(t_idx),
-                                                       env.mat.mu),
+                                                       env.mu(t_idx)),
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
@@ -80,11 +80,12 @@ class THSystem(object):
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
                                         env.sub_comp[-2].T[t_idx].magnitude,
                                         h=d['h'].h(component.rho(t_idx),
-                                                   component.mat.mu).magnitude)
+                                                   component.mu(t_idx)).magnitude,
+                                        k=component.thermal_conductivity(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(component.rho(t_idx),
-                                                       component.mat.mu),
+                                                       component.mu(t_idx)),
                                             A=d['area'])
                     assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
                     convection from %s to %s, from low temperature %f to
@@ -94,10 +95,10 @@ class THSystem(object):
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         h_conv = d['h'].h(component.rho(t_idx),
-                                          component.mat.mu)
+                                          component.mu(t_idx))
                     else:
                         if isinstance(env.mat, LiquidMaterial):
-                            h_conv = d['h'].h(env.rho(t_idx), env.mat.mu)
+                            h_conv = d['h'].h(env.rho(t_idx), env.mu(t_idx))
                         else:
                             msg = 'neither of the components are liquid:'
                             msg += env.name
@@ -137,7 +138,7 @@ class THSystem(object):
         :return : Qcondction
         :rtype:float, dimensionless
         '''
-        conductivity = component.k.magnitude
+        conductivity = component.thermal_conductivity(t_idx).magnitude
         T_b = component.T[t_idx].magnitude
         dr = (component.ro - component.ri).magnitude
         return (conductivity * T_b) / (dr**2)
@@ -204,7 +205,7 @@ class THSystem(object):
         r_b = component.ro.magnitude
         r_env = env.ro.magnitude
         dr = (component.ro - component.ri).magnitude
-        k = component.k.magnitude
+        k = component.thermal_conductivity(t_idx)
         return k / r_b * (r_b * T_b - r_env * T_env) / (dr**2)
 
     def conduction_slab(self, component, env, t_idx, L,
@@ -226,7 +227,7 @@ class THSystem(object):
         T_b = component.T[t_idx].magnitude
         T_env = env.T[t_idx].magnitude
         num = (T_b - T_env)
-        k = component.k
+        k = component.thermal_conductivity(t_idx)
         denom = (L / (k * A)).magnitude
         return num / denom
 
