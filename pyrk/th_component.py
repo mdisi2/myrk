@@ -219,6 +219,12 @@ class THComponent(object):
         """
         self.T[timestep] = temp
         self.prev_t_idx = timestep
+
+        self.update_k(timestep)
+        self.update_rho(timestep)
+        self.update_mu(timestep)
+        self.update_h(timestep)
+
         return self.T[timestep]
     
 ### TODO make graphs for k, mu, rho, h, in the output graphs

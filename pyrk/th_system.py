@@ -59,8 +59,8 @@ class THSystem(object):
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
-                                            h=component.h_arr[t_idx],
-                                            k=component.k_arr[t_idx],
+                                            h=component.h_arr[t_idx].magnitude,
+                                            k=component.k_arr[t_idx].magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
@@ -79,11 +79,11 @@ class THSystem(object):
                 if isinstance(env, THSuperComponent):
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
                                         env.sub_comp[-2].T[t_idx].magnitude,
-                                        h=component.h_arr[t_idx],
-                                        k=component.k_arr[t_idx])
+                                        h=component.h_arr[t_idx].magnitude,
+                                        k=component.k_arr[t_idx].magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
-                                            h=component.h_arr[t_idx],
+                                            h=component.h_arr[t_idx].magnitude,
                                             A=d['area'])
                     assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
                     convection from %s to %s, from low temperature %f to
@@ -121,7 +121,7 @@ class THSystem(object):
                                       m_flow=d['m_flow'],
                                       cp=d['cp'])
                 to_ret -= Qadv / cap / component.vol.magnitude
-            return to_ret * units.kelvin / units.seconds
+            return to_ret * units.kelvin / units.second
 
     def BC_center(self, component, t_idx):
         '''Volumetric conductive heat flux Qconduction from the center of a
