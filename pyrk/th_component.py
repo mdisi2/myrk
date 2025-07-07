@@ -68,12 +68,8 @@ class THComponent(object):
         self.dm = mat.dm
 
         # Liquid Material Specific Attributes
-        if isinstance(mat, LiquidMaterial):
-            self.vm = mat.vm
-            self.hm = hm 
-        else:
-            self.vm = None
-            self.hm = None
+        self.vm = mat.vm if isinstance(mat, LiquidMaterial) else None
+        self.hm = hm if isinstance(mat, LiquidMaterial) else None
 
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
@@ -93,6 +89,24 @@ class THComponent(object):
         self.sph = sph
         self.ri = ri.to('meter')
         self.ro = ro.to('meter')
+
+        ### Property Arrays
+        self.k_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), 'Watts/(K*m)')
+        self.k_arr[0] = self.km.k(T0)
+        
+        if isinstance(mat, LiquidMaterial):
+            self.mu_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), 'Pa*S')
+            self.mu_arr[0] = self.vm.mu(T0)
+        
+            self.h_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), 'W/(K*m^2)')
+            self.h_arr[0] = self.h(0)
+
+        self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), 'kg/(m**3)')
+        self.rho_arr[0] = self.dm.rho(T0)
 
     def mesh(self, size):
         '''cut a THComponent into a list of smaller components
@@ -206,6 +220,54 @@ class THComponent(object):
         self.T[timestep] = temp
         self.prev_t_idx = timestep
         return self.T[timestep]
+    
+### TODO make graphs for k, mu, rho, h, in the output graphs
+
+    def update_k(self,timestep):
+        """Updates the conductivity array
+
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        """
+
+        self.k_arr[timestep] = self.thermal_conductivity(timestep)
+        return self.k_arr
+    
+    def update_rho(self,timestep):
+        """Updates the desnity array
+
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        """
+
+        self.rho_arr[timestep] = self.rho(timestep)
+        return self.rho_arr
+    
+    def update_mu(self,timestep):
+        """Updates the dynamic viscosity array
+        
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        """
+        if isinstance(self.mat, LiquidMaterial):
+            self.mu_arr = self.mu(timestep)
+            return self.mu_arr
+        else:
+            return None
+        
+    def update_h(self,timestep):
+        """Updates the Convection Coefficient
+
+        :param timestep: the timestep at which to query the temperature
+        :param timestep: int
+        """
+        if isinstance(self.mat, LiquidMaterial):
+            self.h_arr = self.h(timestep)
+            return self.h_arr
+        else:
+            return None
+
+
 
     def dtemp(self, timestep):
         """calculate temperature difference between the given timestep and the
