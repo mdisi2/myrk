@@ -222,6 +222,7 @@ class THComponent(object):
         return self.T[timestep]
     
 ### TODO make graphs for k, mu, rho, h, in the output graphs
+### TODO make heat capacity models similar to everything else
 
     def update_k(self,timestep):
         """Updates the conductivity array
@@ -250,7 +251,7 @@ class THComponent(object):
         :type timestep: int
         """
         if isinstance(self.mat, LiquidMaterial):
-            self.mu_arr = self.mu(timestep)
+            self.mu_arr[timestep] = self.mu(timestep)
             return self.mu_arr
         else:
             return None
@@ -262,7 +263,7 @@ class THComponent(object):
         :param timestep: int
         """
         if isinstance(self.mat, LiquidMaterial):
-            self.h_arr = self.h(timestep)
+            self.h_arr[timestep] = self.h(timestep)
             return self.h_arr
         else:
             return None
