@@ -92,21 +92,23 @@ class THComponent(object):
 
         ### Property Arrays
         self.k_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), 'Watts/(K*m)')
-        self.k_arr[0] = self.km.k(T0)
+                                             dtype=float), units.watt/(units.kelvin * units.meter))
+        self.k_arr[0] = mat.km.k(T0)
+
+        self.h_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), units.watt / (units.kelvin * units.meter**2))
+        
+        self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                             dtype=float), units.kg/(units.meter**3))
+        self.rho_arr[0] = mat.dm.rho(T0)
         
         if isinstance(mat, LiquidMaterial):
             self.mu_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), 'Pa*S')
-            self.mu_arr[0] = self.vm.mu(T0)
-        
-            self.h_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), 'W/(K*m^2)')
-            self.h_arr[0] = self.h(0)
+                                             dtype=float), units.pascal *units.second)
+            self.mu_arr[0] = mat.vm.mu(T0)
+    
+            self.h_arr[0] = self.hm.h(mat.dm.rho(T0), mat.vm.mu(T0), mat.km.k(T0))
 
-        self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), 'kg/(m**3)')
-        self.rho_arr[0] = self.dm.rho(T0)
 
     def mesh(self, size):
         '''cut a THComponent into a list of smaller components
@@ -220,15 +222,31 @@ class THComponent(object):
         self.T[timestep] = temp
         self.prev_t_idx = timestep
 
-        self.update_k(timestep)
-        self.update_rho(timestep)
-        self.update_mu(timestep)
-        self.update_h(timestep)
+        if timestep != 0:
+            self.k_arr[timestep] = self.km.k(temp)
+            self.rho_arr[timestep] = self.dm.rho(temp)
+            if isinstance(self.mat, LiquidMaterial):
+                self.mu_arr[timestep] = self.vm.mu(temp)
+                self.h_arr[timestep] = self.hm.h(self.dm.rho(temp),
+                                                self.vm.mu(temp),
+                                                self.km.k(temp))
 
         return self.T[timestep]
     
 ### TODO make graphs for k, mu, rho, h, in the output graphs
 ### TODO make heat capacity models similar to everything else
+
+    def prop_array_IC(self):
+        """Sets the initial conditions of the property arrays"""
+
+        self.k_arr[0] = self.thermal_conductivity(0)
+        self.rho_arr[0] = self.rho(0)
+        
+        if hasattr(self.mat, LiquidMaterial):
+            self.mu_arr[0] = self.mu(0)
+            self.h_arr[0] = self.h(0)
+
+
 
     def update_k(self,timestep):
         """Updates the conductivity array
@@ -266,7 +284,7 @@ class THComponent(object):
         """Updates the Convection Coefficient
 
         :param timestep: the timestep at which to query the temperature
-        :param timestep: int
+        :type timestep: int
         """
         if isinstance(self.mat, LiquidMaterial):
             self.h_arr[timestep] = self.h(timestep)
@@ -274,6 +292,23 @@ class THComponent(object):
         else:
             return None
 
+    def update_properties(self, timestep):
+
+        """
+        Takes updates the properties according
+        to the temperature at the given timestep
+
+        :param t_idx: timestep
+        :type t_idx: 
+        
+        """
+
+        if timestep != 0:
+            self.k_arr[timestep] = self.thermal_conductivity(timestep)
+            self.rho_arr[timestep] = self.rho(timestep)
+            if isinstance(self.mat, LiquidMaterial):
+                self.mu_arr[timestep] = self.mu(timestep)
+                self.h_arr[timestep] = self.h(timestep) 
 
 
     def dtemp(self, timestep):
@@ -471,7 +506,7 @@ class THSuperComponent(THComponent):
         self.add_conduction_in_mesh()
         self.alpha_temp = 0.0 * units.delta_k / units.kelvin
 
-    def compute_tr(self, t_env, t_innercomp, h,thermal_conductivity):
+    def compute_tr(self, t_env, t_innercomp, h,k):
         '''compute temperature at r=R for the sphere from the temperature at r=R-dr
         and the temperature of the env/fluid/coolant
 
@@ -484,9 +519,14 @@ class THSuperComponent(THComponent):
         for envname, d in six.iteritems(self.conv):
             # h = self.conv[envname]["h"].h(env.rho(t_env)).magnitude
             # k = self.conv[envname]["k"].magnitude
-            k = thermal_conductivity
             dr = self.conv[envname]["dr"].magnitude
-        return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
+
+        ret = (-h / k * t_env + t_innercomp / dr)
+        denom = (1 / dr - h / k)
+        if k == 0 or np.isnan(denom):
+            raise ZeroDivisionError(f"Invalid denominator in compute_tr: dr={dr} \n h={h} \n k={k}  \n k_arr[0] = {self.k_arr[0]} \n mat = {type(self.mat)} \n T0 = {self.T0}")
+        else:
+            return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
 
     def add_component(self, a_component):
         self.sub_comp.append(a_component)

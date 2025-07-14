@@ -89,7 +89,7 @@ class THSystem(object):
                     convection from %s to %s, from low temperature %f to
                     high %f is not physical: %f''' % (
                         component.name, env.name, component.T[t_idx].magnitude,
-                        Tr, Qconv.magnitude)
+                        Tr, Qconv)
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         h_conv = component.h_arr[t_idx]
@@ -121,7 +121,7 @@ class THSystem(object):
                                       m_flow=d['m_flow'],
                                       cp=d['cp'])
                 to_ret -= Qadv / cap / component.vol.magnitude
-            return to_ret * units.kelvin / units.second
+            return (to_ret * units.kelvin / units.second)
 
     def BC_center(self, component, t_idx):
         '''Volumetric conductive heat flux Qconduction from the center of a
@@ -162,8 +162,8 @@ class THSystem(object):
         '''
         r_b = component.ro.magnitude
         dr = component.ri.magnitude - component.ro.magnitude
-        T_R = (-h.magnitude / k * t_env + t_b / dr) / \
-            (1 / dr - h.magnitude / k)
+        T_R = (-h / k * t_env + t_b / dr) / \
+            (1 / dr - h / k)
         to_ret = 1 / r_b * k * (r_b * t_b - R.magnitude * T_R) / dr**2
         return to_ret
 
@@ -280,7 +280,7 @@ class THSystem(object):
         :type A: float.
         """
         num = (t_b - t_env)
-        denom = (1.0 / (h.magnitude * A.magnitude))
+        denom = (1.0 / (h * A.magnitude))
         return num / denom
 
     def custom(self, t_b, t_env, res):

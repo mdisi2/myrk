@@ -112,7 +112,7 @@ rho_ext = StepReactivityInsertion(timer=ti,
 nsteps = 5000
 
 # Moderator Initialization
-k_mod = ConductivityModel(a=17 * units.watt 
+k_mod = ConductivityModel(a=17*units.watt 
                         / (units.meter * units.kelvin), model="constant")
 cp_mod = 1650.0 * units.joule / (units.kg * units.kelvin)
 rho_mod = DensityModel(a=1740. * units.kg / (units.meter**3), model="constant")
@@ -129,7 +129,7 @@ Fuel = Material('fuel', k_fuel, cp_fuel, rho_fuel)
 
 
 # Shell Initialization
-k_shell = ConductivityModel(a=17*units.watt 
+k_shell = ConductivityModel(a=17 * units.watt 
                           /(units.meter * units.kelvin), model="constant")
 cp_shell = 1650.0 * units.joule / (units.kg * units.kelvin)
 rho_shell = DensityModel(a=1740. * units.kg /
@@ -154,7 +154,7 @@ h_cool = ConvectiveModel(
     length_scale=length_scale_cool,
     model='wakao')
 
-k_cool = Flibe().thermal_conductivity
+k_cool = Flibe().thermal_conductivity()
 
 t_inlet = units.Quantity(600.0, units.degC)
 
@@ -199,8 +199,6 @@ comp_list.extend(shell.mesh(l))
 pebble = th.THSuperComponent('pebble', t_shell, comp_list, timer=ti)
 # Add convective boundary condition to the pebble
 pebble.add_conv_bc('cool', h=h_cool, k=k_cool)
-
-#needs to be updated since h is no longer a float/constant ?
 
 cool = th.THComponent(name="cool",
                       mat=Cool,
