@@ -28,7 +28,7 @@ class THComponent(object):
                  sph=False,
                  ri=0 * units.meter,
                  ro=0 * units.meter,
-                 convm=None):
+                 hm=None):
         """Initalizes a thermal hydraulic component.
         A thermal-hydraulic component will be treated as one "lump" in the
         lumped capacitance model.
@@ -67,12 +67,11 @@ class THComponent(object):
         self.km = mat.km
         self.cp = mat.cp
         self.dm = mat.dm
-        self.convm = convm
 
         # Liquid Material Specific Attributes
         #Do we want convm on all attributes or on just the solids? lets think...
         self.vm = getattr(self.mat, 'vm' , None)
-        self.convm = convm
+        self.hm = hm
 
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
@@ -200,11 +199,11 @@ class THComponent(object):
         :rtype: quantity in units $W/ k / m^2$
         """
 
-        rhoc = self.convm.dm.rho(self.temp(timestep))
-        kc = self.convm.km.k(self.temp(timestep))
-        muc = self.convm.vm.mu(self.temp(timestep))
+        rhoc = self.hm.dm.rho(self.temp(timestep))
+        kc = self.hm.km.k(self.temp(timestep))
+        muc = self.hm.vm.mu(self.temp(timestep))
 
-        h_ret = self.convm.h(rho = rhoc,
+        h_ret = self.hm.h(rho = rhoc,
                          mu = muc,
                          k = kc)
         

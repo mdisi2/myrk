@@ -196,8 +196,7 @@ shell = th.THComponent(name="shell",
                        timer=ti,
                        sph=True,
                        ri=r_fuel,
-                       ro=r_shell,
-                       convm=h_cool
+                       ro=r_shell
                        )
 
 
@@ -207,7 +206,7 @@ cool = th.THComponent(name="cool",
                       T0=t_cool,
                       alpha_temp=alpha_cool,
                       timer=ti,
-                      convm=h_cool
+                      hm=h_cool
                       )
 
 # mesh size for the fuel pebble FVM calculation
