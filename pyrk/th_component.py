@@ -16,7 +16,8 @@ class THComponent(object):
     support of calculations related to the thermal hydraulics sub block
     """
 
-    def __init__(self, name=None,
+    def __init__(self,
+                 name=None,
                  mat=Material(),
                  vol=0.0 * units.meter**3,
                  T0=0.0 * units.kelvin,
@@ -27,7 +28,7 @@ class THComponent(object):
                  sph=False,
                  ri=0 * units.meter,
                  ro=0 * units.meter,
-                 hm=None):
+                 convm=None):
         """Initalizes a thermal hydraulic component.
         A thermal-hydraulic component will be treated as one "lump" in the
         lumped capacitance model.
@@ -57,8 +58,8 @@ class THComponent(object):
         :param ro: outer radius of the sph/annular component,
         ro=radius for sphere
         :type ro: float
-        :param hm: convection model
-        :type hm: model
+        :convm: convection model (usually coolant)
+        :type hm: convection model object of coolant
         """
         self.name = name
         self.vol = vol.to('meter**3')
@@ -66,10 +67,12 @@ class THComponent(object):
         self.km = mat.km
         self.cp = mat.cp
         self.dm = mat.dm
+        self.convm = convm
 
         # Liquid Material Specific Attributes
-        self.vm = mat.vm if isinstance(mat, LiquidMaterial) else None
-        self.hm = hm if isinstance(mat, LiquidMaterial) else None
+        #Do we want convm on all attributes or on just the solids? lets think...
+        self.vm = getattr(self.mat, 'vm' , None)
+        self.convm = convm
 
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
@@ -90,24 +93,17 @@ class THComponent(object):
         self.ri = ri.to('meter')
         self.ro = ro.to('meter')
 
-        ### Property Arrays
-        self.k_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), units.watt/(units.kelvin * units.meter))
-        self.k_arr[0] = mat.km.k(T0)
-
-        self.h_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), units.watt / (units.kelvin * units.meter**2))
+        #Property Arrays
         
         self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                              dtype=float), units.kg/(units.meter**3))
-        self.rho_arr[0] = mat.dm.rho(T0)
-        
+        self.rho_arr[0] = mat.dm.rho(self.T0)
+
         if isinstance(mat, LiquidMaterial):
             self.mu_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), units.pascal *units.second)
-            self.mu_arr[0] = mat.vm.mu(T0)
-    
-            self.h_arr[0] = self.hm.h(mat.dm.rho(T0), mat.vm.mu(T0), mat.km.k(T0))
+                                        dtype=float), units.pascal * units.second)
+            
+            self.mu_arr[0] = self.vm.mu(self.T0)
 
 
     def mesh(self, size):
@@ -157,7 +153,7 @@ class THComponent(object):
         return self.T[timestep]
 
     def rho(self, timestep):
-        """The density of this component's materials
+        """The density of this component's materials at chosen timestep
 
         :param timestep: the timestep at which to query the temperature
         :type timestep: int
@@ -168,7 +164,7 @@ class THComponent(object):
         return ret
     
     def thermal_conductivity(self,timestep):
-        """the thermal conductivity of this component's materials
+        """the thermal conductivity of this component's materials at chosen timestep
         
         :param timestep: the timestep at which to query the temperature
         :type timestep: int
@@ -180,7 +176,7 @@ class THComponent(object):
         return ret
     
     def mu(self,timestep):
-         """the dynamic viscosity of this components materials
+         """the dynamic viscosity of this components materials at chosen timestep
         
          :param timestep: the timestep at which to query the temperature
          :type timestep: int
@@ -193,23 +189,26 @@ class THComponent(object):
             ret = self.vm.mu(self.temp(timestep))
             return ret
          
-    def h(self, timestep):
-        """the temperature dependent Wakao correction for heat
-        convection coefficient, h
-
-        :param timestep: the timestep at which to query the temperature
+    def h(self,timestep):
+        """Calculates the heat transfer coefficient from the convective
+        model at the chosen time step. Uses whatever coolant was loaded 
+        into ConvectiveModel(...) in the input file 
+        
+        :param timestep: the timestep to query h
         :type timestep: int
-        :return: the heat convection coefficient, h
-        :type: float, in units $watt/meter**2/kelvin$
+        :return: the heat transfer coefficient
+        :rtype: quantity in units $W/ k / m^2$
         """
-        if self.hm is None:
-            return None
-        else:
-            rho_t = self.rho(timestep)
-            mu_t = self.mu(timestep)
-            k_t = self.thermal_conductivity(timestep)
-            ret = self.hm.h(rho=rho_t, mu=mu_t, k=k_t)
-            return ret
+
+        rhoc = self.convm.dm.rho(self.temp(timestep))
+        kc = self.convm.km.k(self.temp(timestep))
+        muc = self.convm.vm.mu(self.temp(timestep))
+
+        h_ret = self.convm.h(rho = rhoc,
+                         mu = muc,
+                         k = kc)
+        
+        return h_ret
 
     def update_temp(self, timestep, temp):
         """Updates the temperature
@@ -222,93 +221,27 @@ class THComponent(object):
         self.T[timestep] = temp
         self.prev_t_idx = timestep
 
-        if timestep != 0:
-            self.k_arr[timestep] = self.km.k(temp)
-            self.rho_arr[timestep] = self.dm.rho(temp)
-            if isinstance(self.mat, LiquidMaterial):
-                self.mu_arr[timestep] = self.vm.mu(temp)
-                self.h_arr[timestep] = self.hm.h(self.dm.rho(temp),
-                                                self.vm.mu(temp),
-                                                self.km.k(temp))
-
         return self.T[timestep]
     
-### TODO make graphs for k, mu, rho, h, in the output graphs
-### TODO make heat capacity models similar to everything else
+### TODO make graphs for rho and mu in the output graphs
+### TODO make heat capacity models similar to everything else  
 
-    def prop_array_IC(self):
-        """Sets the initial conditions of the property arrays"""
-
-        self.k_arr[0] = self.thermal_conductivity(0)
-        self.rho_arr[0] = self.rho(0)
-        
-        if hasattr(self.mat, LiquidMaterial):
-            self.mu_arr[0] = self.mu(0)
-            self.h_arr[0] = self.h(0)
-
-
-
-    def update_k(self,timestep):
-        """Updates the conductivity array
-
-        :param timestep: the timestep at which to query the temperature
-        :type timestep: int
+    def update_properties(self, timestep, temp):
         """
-
-        self.k_arr[timestep] = self.thermal_conductivity(timestep)
-        return self.k_arr
-    
-    def update_rho(self,timestep):
-        """Updates the desnity array
-
-        :param timestep: the timestep at which to query the temperature
-        :type timestep: int
-        """
-
-        self.rho_arr[timestep] = self.rho(timestep)
-        return self.rho_arr
-    
-    def update_mu(self,timestep):
-        """Updates the dynamic viscosity array
-        
-        :param timestep: the timestep at which to query the temperature
-        :type timestep: int
-        """
-        if isinstance(self.mat, LiquidMaterial):
-            self.mu_arr[timestep] = self.mu(timestep)
-            return self.mu_arr
-        else:
-            return None
-        
-    def update_h(self,timestep):
-        """Updates the Convection Coefficient
-
-        :param timestep: the timestep at which to query the temperature
-        :type timestep: int
-        """
-        if isinstance(self.mat, LiquidMaterial):
-            self.h_arr[timestep] = self.h(timestep)
-            return self.h_arr
-        else:
-            return None
-
-    def update_properties(self, timestep):
-
-        """
-        Takes updates the properties according
+        Updates the property arrays according
         to the temperature at the given timestep
 
+        rho_arr and if applicable mu_arr
+
         :param t_idx: timestep
-        :type t_idx: 
+        :type t_idx: int
         
         """
 
-        if timestep != 0:
-            self.k_arr[timestep] = self.thermal_conductivity(timestep)
-            self.rho_arr[timestep] = self.rho(timestep)
-            if isinstance(self.mat, LiquidMaterial):
-                self.mu_arr[timestep] = self.mu(timestep)
-                self.h_arr[timestep] = self.h(timestep) 
+        if timestep > 0:
+            self.rho_arr[timestep] = self.dm.rho(temp)
+            if hasattr(self, "mu_arr"):
+                self.mu_arr[timestep] = self.vm.mu(temp)
 
 
     def dtemp(self, timestep):
@@ -341,16 +274,20 @@ class THComponent(object):
 
         :param env: name of the component that heat is transfered to/from
         :type env: str
-        :param h: heat transfer coefficient
-        :type h: float
+        :param h: heat transfer coefficient or model
+        :type h: float or ConvectiveModel object
+        :param k: conduction coefficient (k)
+        :type k: float or ConductionModel object
         :param area: heat transfer area
         :type area: float
         '''
         if not isinstance(h, ConvectiveModel):
-            h = ConvectiveModel(h0=h)
+            h = ConvectiveModel(h0=h,
+                                model='constant')
         self.conv[env] = {
-            "h": h,
-            "area": area
+            "h": h, #stores model in dictionary to be refrenced anywhere now
+            "area": area,
+            "k" : h.km.k
         }
 
     def add_mass_trans(self, env, H, u):
@@ -372,13 +309,15 @@ class THComponent(object):
         :param prev_comp: name of the component that is immediately inside the
           boundary component
         :type prev_comp: str
-        :param h: convective heat transfer coefficient
-        :type h: float or obj of Convective Model
+        :param h: the convection model or float
+        :type h: float
         :param R: radius of the sphere
         :type R: float
         '''
+
         if not isinstance(h, ConvectiveModel):
-            h = ConvectiveModel(h0=h)
+            h = ConvectiveModel(h0=h,
+                                model='constant')
 
         self.convBC[env] = {
             "h": h,
@@ -442,7 +381,6 @@ class THComponent(object):
         rec = {'component': self.name,
                'vol': self.vol.magnitude,
                'matname': self.mat.name,
-               #'k': self.thermal_conductivity(timestep).magnitude, no longer being treated as a float
                'cp': self.cp.magnitude,
                'T0': self.T0.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
@@ -506,7 +444,7 @@ class THSuperComponent(THComponent):
         self.add_conduction_in_mesh()
         self.alpha_temp = 0.0 * units.delta_k / units.kelvin
 
-    def compute_tr(self, t_env, t_innercomp, h,k):
+    def compute_tr(self, t_env, t_innercomp, h,k ):
         '''compute temperature at r=R for the sphere from the temperature at r=R-dr
         and the temperature of the env/fluid/coolant
 
@@ -524,7 +462,7 @@ class THSuperComponent(THComponent):
         ret = (-h / k * t_env + t_innercomp / dr)
         denom = (1 / dr - h / k)
         if k == 0 or np.isnan(denom):
-            raise ZeroDivisionError(f"Invalid denominator in compute_tr: dr={dr} \n h={h} \n k={k}  \n k_arr[0] = {self.k_arr[0]} \n mat = {type(self.mat)} \n T0 = {self.T0}")
+            raise ZeroDivisionError(f"Invalid denominator in compute_tr: dr={dr} \n h={h} \n k={k}  \n k_arr[0] = {self.k_arr[0]} \n h_arr[0] = {self.h_arr[0]}")
         else:
             return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
 
@@ -540,7 +478,7 @@ class THSuperComponent(THComponent):
         :type h: float
         :param thermal conductivity: the thermal conductivity at the temperature
         :type thermal conductivity: float
-        :param k: 
+        :param k: the convective heat trans
         '''
         self.sub_comp[-2].addConvBC(envname,
                                     self.sub_comp[-1],

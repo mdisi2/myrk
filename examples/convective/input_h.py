@@ -13,11 +13,11 @@ from pyrk.utilities.ur import units
 from pyrk import th_component as th
 import math
 from pyrk.materials.material import Material
-from pyrk.materials.liquid_material import LiquidMaterial
 from pyrk.convective_model import ConvectiveModel
 from pyrk.density_model import DensityModel
 from pyrk.conductivity_model import ConductivityModel
 from pyrk.timer import Timer
+from pyrk.global_convection import GlobalConvection
 
 #############################################
 #
@@ -61,7 +61,6 @@ def vol_sphere(r):
     assert(r >= 0 * units.meter)
     return (4. / 3.) * math.pi * pow(r.to('meter'), 3)
 
-
 # volumes
 n_pebbles = 470000
 r_mod = 1.25 / 100.0 * units.meter
@@ -73,6 +72,12 @@ vol_fuel = vol_sphere(r_fuel) - vol_sphere(r_mod)
 vol_shell = vol_sphere(r_shell) - vol_sphere(r_fuel)
 vol_cool = (vol_mod + vol_fuel + vol_shell) * 0.4 / 0.6
 a_pb = area_sphere(r_shell)
+
+
+# regions
+r_FuelRegion = 1.05 * units.meter
+r_ModRegion = 1.25 * units.meter
+void_av = 0.4
 
 
 #############################################
@@ -141,20 +146,22 @@ Shell = Material('shell', k_shell, cp_shell, rho_shell)
 from pyrk.materials.flibe import Flibe
 Cool = Flibe()
 
-
 # Coolant flow properties
-m_flow_cool = 976.0 * units.kg / units.seconds
-length_scale_cool = 2.0 * r_fuel
-a_flow_cool = 0.40 * (math.pi * r_shell**2) # assuming porosity is 40% & packing is 60%
+m_flow = 976.0 * units.kg / units.seconds
 
+# convection from coolant to all other components
 h_cool = ConvectiveModel(
-    mat=Cool,
-    m_flow=m_flow_cool,
-    a_flow=a_flow_cool,
-    length_scale=length_scale_cool,
+    mat= Cool,
+    m_flow= m_flow,
+    a_flow= void_av * math.pi * (r_FuelRegion)**2,
+    length_scale= 2.0 * (r_shell) ,
     model='wakao')
 
-k_cool = Flibe().thermal_conductivity()
+conv = GlobalConvection(name='flibe',
+                        mat=Cool,
+                        rad=r_fuel,
+                        hm=h_cool
+)
 
 t_inlet = units.Quantity(600.0, units.degC)
 
@@ -189,16 +196,10 @@ shell = th.THComponent(name="shell",
                        timer=ti,
                        sph=True,
                        ri=r_fuel,
-                       ro=r_shell)
+                       ro=r_shell,
+                       convm=h_cool
+                       )
 
-# mesh size for the fuel pebble FVM calculation
-l = 0.0005 * units.meter
-comp_list = mod.mesh(l)
-comp_list.extend(fuel.mesh(l))
-comp_list.extend(shell.mesh(l))
-pebble = th.THSuperComponent('pebble', t_shell, comp_list, timer=ti)
-# Add convective boundary condition to the pebble
-pebble.add_conv_bc('cool', h=h_cool, k=k_cool)
 
 cool = th.THComponent(name="cool",
                       mat=Cool,
@@ -206,11 +207,22 @@ cool = th.THComponent(name="cool",
                       T0=t_cool,
                       alpha_temp=alpha_cool,
                       timer=ti,
-                      hm=h_cool)
+                      convm=h_cool
+                      )
+
+# mesh size for the fuel pebble FVM calculation
+l = 0.0005 * units.meter
+comp_list = mod.mesh(l)
+comp_list.extend(fuel.mesh(l))
+comp_list.extend(shell.mesh(l))
+pebble = th.THSuperComponent('pebble', t_shell, comp_list, timer=ti)
+
+# Add convective boundary condition to the pebble
+pebble.add_conv_bc('cool', h=h_cool, k=Cool.km.k(t_cool))
 
 # The coolant convects to the shell
 cool.add_convection('pebble', h=h_cool, area=a_pb)
-cool.add_advection('cool', m_flow_cool / n_pebbles, t_inlet, cp=cool.cp)
+cool.add_advection('cool', m_flow / n_pebbles, t_inlet, cp=cool.cp)
 
 components = []
 for i in range(0, len(pebble.sub_comp)):

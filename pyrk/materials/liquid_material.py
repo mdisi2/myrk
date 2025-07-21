@@ -3,7 +3,6 @@ from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.viscosity_model import ViscosityModel
 from pyrk.conductivity_model import ConductivityModel
-from pyrk.inp import validation
 
 
 class LiquidMaterial(Material):

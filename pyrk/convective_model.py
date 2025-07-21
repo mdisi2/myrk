@@ -13,9 +13,10 @@ class ConvectiveModel(object):
                  m_flow=None,
                  a_flow=None,
                  length_scale=None,
+                 T0 = None,
                  model="constant"):
         """
-        Initializes the DensityModel object.
+        Initializes the ConductivityModel object.
 
         :param h0: convective heat transfer coefficient when it's a constant
         :type h0: double
@@ -27,6 +28,8 @@ class ConvectiveModel(object):
         :type a_flow: double
         :param length_scale: heat transfer length scale
         :type length_scale: double
+        :param T0: initial temperature of coolant
+        :type T0: quantity with units.kelvin
         :param model: The keyword for a model type, implemented types are
         'constant' and 'wakao'
         :type model: string
@@ -35,9 +38,11 @@ class ConvectiveModel(object):
         self.km = mat.km
         self.cp = mat.cp
         self.vm = mat.vm
+        self.dm = mat.dm
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale
+        self.T0 = T0
 
         self.implemented = {'constant': self.constant,
                             'wakao': self.wakao}
@@ -53,12 +58,19 @@ class ConvectiveModel(object):
                 msg += m
             raise ValueError(msg)
 
-    def h(self, rho=0 * units.kg / units.meter**3,
+    def h(self,
+          temp = 0.0 * units.kelvin,
+          rho=0 * units.kg / units.meter**3,
           mu=0 * units.pascal * units.second,
           k=0 * units.watt / units.kelvin / units.meter):
         """
         Returns the convective heat transfer coefficient
 
+        If temp is provided, it will use properties from models
+        If not, it will use the input properties
+
+        :param temp: the fluid temperature
+        :type temp: float
         :param rho: The density of the object
         :type rho: float
         :param mu: The dynamic viscosity of the object
@@ -66,27 +78,72 @@ class ConvectiveModel(object):
         :param k: The thermal conductivity of the object
         :type k: float
         """
-        return self.implemented[self.model](rho.to(units.kg / units.meter**3),
+
+
+        return self.implemented[self.model](temp.to(units.kelvin),
+                                            rho.to(units.kg / units.meter**3),
                                             mu.to(units.pascal * units.second),
                                             k.to(units.watt / units.kelvin / units.meter))
 
-    def constant(self, rho, mu, k):
+    def constant(self):
         """
         Returns a constant heat transfer coefficient: h0
-        :param rho: The density of the object
-        :type rho: float
-        :param mu: The dynamic viscosity of the object
-        :type mu: float
-        :param k: the thermal conductivity of the object
-        :type k: float
 
         """
         return self.h0
 
-    def wakao(self, rho, mu, k):
+### Property Attributes 
+    
+    def mu(self,temp):
+        """returns the dynamic viscosity of the liquid passed in the
+        current convective model at the given temp
+        
+        :param temp: Temperature at which to query dynamic viscosity
+        :temp type: Quantity units.kelvin
+        :return: thermal viscosity
+        :rtype: Quantity units $Pa /cdot s$ 
+        """
+        
+        return self.vm.mu(temp)
+
+    def k(self,temp):
+        """
+        returns the thermal conductivity of the fluid passed
+        in the current convective model at the given temp
+
+        :param temp: temperature to query conductivity
+        :temp type: quantity units.kelvin
+        :return: conductivity of fluid
+        :rtype: quantity units $W/K/m$
+        
+        """
+
+        return self.km.k(temp)
+    
+    def rho(self,temp):
+        """
+        returns the density of the fluid passed
+        in the current convective model at the given temp
+
+        :param temp: temperature to query density
+        :temp type: quantity units.kelvin
+        :return: density of fluid
+        :rtype: quantity units $Kg/m^3$
+        
+        """
+
+        return self.dm.rho(temp)
+    
+    def wakao(self,
+              temp=0.0 * units.kelvin,
+              rho=0.0 * (units.kg / units.meter**3),
+              mu=0.0* (units.pascal * units.second),
+              k=0.0 * (units.watt / units.kelvin / units.meter)):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
+        :param temp: The temperature to query the model
+        :type temp: float
         :param rho: The density of the object
         :type rho: float
         :param mu: The dynamic viscosity of the object
@@ -94,6 +151,23 @@ class ConvectiveModel(object):
         :param k: the thermal conductivity of the object
         :type k: float
         """
+
+        if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
+            raise ValueError(
+                f"Model is lacking Properties and/or Temperature\n"
+                f"temp = {temp}\n"
+                f"rho = {rho}\n"
+                f"mu = {mu}\n"
+                f"k = {k}"
+    )
+
+        if rho.magnitude == 0.0:
+            rho = self.rho(temp)
+        if mu.magnitude == 0.0 :
+            mu = self.mu(temp)
+        if k.magnitude == 0.0  :
+            k = self.k(temp)
+
         u = self.m_flow / self.a_flow / rho
         Re = rho * self.length_scale * u / mu
         Pr = self.cp * mu / k
