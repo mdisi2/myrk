@@ -135,7 +135,7 @@ class THSystem(object):
         :return : Qcondction
         :rtype:float, dimensionless
         '''
-        conductivity = component.theramal_conductivity(t_idx).magnitude
+        conductivity = component.thermal_conductivity(t_idx).magnitude
         T_b = component.T[t_idx].magnitude
         dr = (component.ro - component.ri).magnitude
         return (conductivity * T_b) / (dr**2)
