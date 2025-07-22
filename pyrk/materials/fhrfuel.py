@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.materials.material import Material
 from pyrk.density_model import DensityModel
+from pyrk.conductivity_model import ConductivityModel
 
 
 class Fhrfuel(Material):
@@ -15,12 +16,14 @@ class Fhrfuel(Material):
         """
         Material.__init__(self,
                           name=name,
-                          k=self.thermal_conductivity(),
+                          km=self.thermal_conductivity(),
                           cp=self.specific_heat_capacity(),
                           dm=self.density())
 
     def thermal_conductivity(self):
-        return 17 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=17 * units.watt / (units.meter * units.kelvin),
+                                 model='constant')
+
 
     def specific_heat_capacity(self):
         return 1818 * units.joule / units.kg / units.kelvin

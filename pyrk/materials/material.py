@@ -2,6 +2,7 @@ from pyrk.inp import validation
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.conductivity_model import ConductivityModel
+from pint.errors import DimensionalityError
 
 
 class Material(object):
@@ -25,11 +26,35 @@ class Material(object):
         :type dm: DensityModel object
         """
         self.name = name
-        self.km = km
+
+        if not isinstance(km, ConductivityModel):
+            if hasattr(km,'units'):
+                try:
+                    km.to('watt / meter / kelvin')
+                except DimensionalityError:
+                    raise ValueError("Thermal Conductivity must have units of" \
+                    " \n watt / meter / kelvin")
+            self.km = ConductivityModel(a=km,
+                                         model='constant')
+        else:
+            self.km = km
+
         self.cp = cp.to('joule/kg/kelvin')
         validation.validate_ge(
             "cp", cp, 0 * units.joule / units.kg / units.kelvin)
-        self.dm = dm
+        
+        if not isinstance(dm, DensityModel):
+            if hasattr(dm,'units'):
+                try:
+                    dm.to('kilogram / meter / meter / meter')
+                except DimensionalityError:
+                    raise ValueError("Density must havt units of" \
+                    " \n kilogram / meter / meter / meter")
+            self.dm = DensityModel(a=dm,
+                                         model='constant')
+        else:
+            self.dm = dm
+    
 
     def k(self, temp):
         """

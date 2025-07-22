@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.materials.material import Material
 from pyrk.density_model import DensityModel
+from pyrk.conductivity_model import ConductivityModel
 
 
 class SS316(Material):
@@ -27,7 +28,7 @@ class SS316(Material):
         """
         Material.__init__(self,
                           name=name,
-                          k=self.thermal_conductivity(),
+                          km=self.thermal_conductivity(),
                           cp=self.specific_heat_capacity(),
                           dm=self.density())
 
@@ -37,7 +38,8 @@ class SS316(Material):
         also from http://www.azom.com/article.aspx?ArticleID=863.
 
         """
-        return 21.5 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=21.5 * units.watt / (units.meter * units.kelvin),
+                                 model='constant')
 
     def specific_heat_capacity(self):
         """Specific heat capacity for stainless steel [J/kg/K]

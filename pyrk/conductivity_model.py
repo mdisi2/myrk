@@ -15,9 +15,9 @@ class ConductivityModel(object):
 
         :param model: The keyword for a model type.
         :type model: string
-        :param a: first coefficient of the model
+        :param a: first coefficient of the model - the constant term 
         :type a: float.
-        :param b: second coefficient of the model.
+        :param b: second coefficient of the model - the term multiplied by temperature.
         :type b: float
         """
         self.a = a.to(units.watt / units.kelvin / units.meter)

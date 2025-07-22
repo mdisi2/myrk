@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.materials.material import Material
+from pyrk.conductivity_model import ConductivityModel
 
 
 class SFRMetal(Material):
@@ -20,15 +21,17 @@ class SFRMetal(Material):
         """
         Material.__init__(self,
                           name=name,
-                          k=self.thermal_conductivity(),
+                          km=self.thermal_conductivity(),
                           cp=self.specific_heat_capacity(),
                           dm=self.density())
 
     def thermal_conductivity(self):
         """SFRMetal thermal conductivity in [W/m-K]
         """
-        to_ret = 0.16 * units.watt / (units.centimeter * units.kelvin)
-        return to_ret.to('watt/meter/kelvin')
+        a0 = 0.16 * units.watt / (units.centimeter * units.kelvin)
+       
+        return ConductivityModel(a=a0,
+                                 model='constant')
 
     def specific_heat_capacity(self):
         """Specific heat capacity of SFRMetal [J/kg/K]

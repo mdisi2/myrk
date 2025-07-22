@@ -5,6 +5,9 @@ from pyrk.materials.liquid_material import LiquidMaterial
 class ConvectiveModel(object):
     """
     This class defines the model for convective heat transfer coefficient: h
+
+    Only use the Wakao model if convection is between pebbles and coolant,
+    the correlation is not for reflector walls or anything that isn't a pebble.  
     """
 
     def __init__(self,
@@ -91,8 +94,11 @@ class ConvectiveModel(object):
 
         """
         return self.h0
-
-### Property Attributes 
+    
+### ====================================================================================================
+### ====================================================================================================
+### Wakao Model
+### Material Property Attributes
     
     def mu(self,temp):
         """returns the dynamic viscosity of the liquid passed in the
@@ -139,6 +145,7 @@ class ConvectiveModel(object):
               rho=0.0 * (units.kg / units.meter**3),
               mu=0.0* (units.pascal * units.second),
               k=0.0 * (units.watt / units.kelvin / units.meter)):
+
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
@@ -151,22 +158,13 @@ class ConvectiveModel(object):
         :param k: the thermal conductivity of the object
         :type k: float
         """
-
-    #     if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
-    #         raise ValueError(
-    #             f"Model is lacking Properties and/or Temperature\n"
-    #             f"temp = {temp}\n"
-    #             f"rho = {rho}\n"
-    #             f"mu = {mu}\n"
-    #             f"k = {k}"
-    # )
-        
-        #hopefully fixes first timestep issue
+# First timestep
         if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
             rho = self.rho(self.T0)
             mu = self.mu(self.T0)
             k = self.k(self.T0)
 
+# If temp is plugged in instead of rho, mu, or k
         if rho.magnitude == 0.0:
             rho = self.rho(temp)
         if mu.magnitude == 0.0 :

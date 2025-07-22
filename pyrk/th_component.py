@@ -58,7 +58,7 @@ class THComponent(object):
         :param ro: outer radius of the sph/annular component,
         ro=radius for sphere
         :type ro: float
-        :convm: convection model (usually coolant)
+        :hm: convection model (if convection from coolant)
         :type hm: convection model object of coolant
         """
         self.name = name
@@ -67,12 +67,8 @@ class THComponent(object):
         self.km = mat.km
         self.cp = mat.cp
         self.dm = mat.dm
-
-        # Liquid Material Specific Attributes
-        #Do we want convm on all attributes or on just the solids? lets think...
         self.vm = getattr(self.mat, 'vm' , None)
         self.hm = hm
-
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                          dtype=float), 'kelvin')
@@ -94,11 +90,12 @@ class THComponent(object):
 
         #Property Arrays
         
-        self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                             dtype=float), units.kg/(units.meter**3))
-        self.rho_arr[0] = mat.dm.rho(self.T0)
+        if self.dm.model != 'constant': 
+            self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
+                                                dtype=float), units.kg/(units.meter**3))
+            self.rho_arr[0] = mat.dm.rho(self.T0)
 
-        if isinstance(mat, LiquidMaterial):
+        if isinstance(mat, LiquidMaterial) and self.vm.model != 'constant':
             self.mu_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                         dtype=float), units.pascal * units.second)
             

@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.materials.material import Material
 from pyrk.density_model import DensityModel
+from pyrk.conductivity_model import ConductivityModel
 
 
 class Kernel(Material):
@@ -27,7 +28,7 @@ class Kernel(Material):
         """
         Material.__init__(self,
                           name=name,
-                          k=self.thermal_conductivity(),
+                          km=self.thermal_conductivity(),
                           cp=self.specific_heat_capacity(),
                           dm=self.density())
 
@@ -46,7 +47,8 @@ class Kernel(Material):
         Wirth:
         http://www.sciencedirect.com/science/article/pii/S0022311510003284
         """
-        return 1.5 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=1.5 * units.watt / (units.meter * units.kelvin),
+                                 model='constant')
 
     def specific_heat_capacity(self):
         """Specific heat capacity for TRISO kernel [J/kg/K]

@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.materials.material import Material
 from pyrk.density_model import DensityModel
+from pyrk.conductivity_model import ConductivityModel
 
 
 class Graphite(Material):
@@ -16,7 +17,7 @@ class Graphite(Material):
         """
         Material.__init__(self,
                           name=name,
-                          k=self.thermal_conductivity(),
+                          km=self.thermal_conductivity(),
                           cp=self.specific_heat_capacity(),
                           dm=self.density())
 
@@ -40,7 +41,7 @@ class Graphite(Material):
         Also noted in:
         http://www.osti.gov/scitech/servlets/purl/714896/
         """
-        return 0.26 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=0.26 * units.watt / (units.meter * units.kelvin))
 
     def specific_heat_capacity(self):
         """Specific heat capacity for H451 graphite [J/kg/K]

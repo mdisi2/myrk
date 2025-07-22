@@ -10,6 +10,7 @@ class ViscosityModel(object):
     def __init__(self,
                  a=0 * units.pascal * units.second,
                  b=0 * units.kelvin,
+                 c=0,
                  model="exponential"):
         """
         Initializes the ViscosityModel object.
@@ -23,9 +24,11 @@ class ViscosityModel(object):
         """
         self.a = a.to(units.pascal * units.second)
         self.b = b.to(units.kelvin)
+        self.c = c
 
         self.implemented = {'constant': self.constant,
-                            'exponential': self.exponential}
+                            'exponential': self.exponential,
+                            'sodium':self.sodium}
 
         if model in self.implemented.keys():
             self.model = model
@@ -60,11 +63,36 @@ class ViscosityModel(object):
     
     def exponential(self, temp=0.0 * units.kelvin):
         """
-        Returns an exponential dynamic viscosity, a * exp(b / temp).
+        Returns dynamic viscosity using an exponential 
+        function in the form
+        
+        a * exp(b / temp)
 
         :param temp: The temperature of the object
         :type temp: float.
         """
         temp = temp.to(units.kelvin)
         ret = self.a * exp(self.b / temp)
+        return ret
+    
+    def sodium(self, temp=0.0 * units.kelvin):
+        """
+        Returns dynamic viscosity using an exponential function
+        in the form
+
+        a*T^(c) * exp(b/T) 
+        
+        to conform to http://www.ne.anl.gov/eda/ANL-RE-95-2.pdf
+        page 207's model of viscosity
+
+        :param temp: temperature of object
+        :temp type: float 
+        """
+
+        T = temp.to(units.kelvin)
+        T = T.magnitude
+        a = self.a.magnitude
+        b = self.b.magnitude
+        ret = a * T**(self.c) * exp(b/T)
+        ret = (ret.magnitude) * units.pascal * units.second
         return ret

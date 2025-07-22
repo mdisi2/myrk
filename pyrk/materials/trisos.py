@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
-from pyrk.th import THComponent
+from pyrk.th_component import THComponent
 from pyrk.density_model import DensityModel
+from pyrk.conductivity_model import ConductivityModel
 
 
 class Triso(THComponent):
@@ -30,7 +31,7 @@ class Triso(THComponent):
         THComponent.__init__(self,
                              name=name,
                              vol=vol,
-                             k=self.thermal_conductivity(),
+                             km=self.thermal_conductivity(),
                              cp=self.specific_heat_capacity(),
                              dm=self.density(),
                              T0=T0,
@@ -45,7 +46,8 @@ class Triso(THComponent):
         from
         http://digitalcommons.usu.edu/cgi/viewcontent.cgi?article=2453&context=etd
         """
-        return 3.7 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=3.7 * units.watt / (units.meter * units.kelvin),
+                               model='constant')
 
     def specific_heat_capacity(self):
         """Specific heat capacity of a triso particle
