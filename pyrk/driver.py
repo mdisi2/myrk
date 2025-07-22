@@ -45,7 +45,7 @@ def update_th(t, y_n, y_th, si):
     t_idx = si.timer.t_idx(t * units.seconds)
     for idx, comp in enumerate(si.components):
         comp.update_temp(t_idx, y_th[idx] * units.kelvin)
-        comp.update_properties(t_idx)
+        comp.update_properties(t_idx, y_th[idx] * units.kelvin)
     n_n = len(y_n)
     si.y[t_idx][n_n:] = y_th
 

@@ -59,7 +59,7 @@ class THSystem(object):
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
-                                            h=component.h(t_idx).magnitude,
+                                            h=d['h'].h(component.temp(t_idx)).magnitude,
                                             k=component.thermal_conductivity(t_idx).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
@@ -79,11 +79,11 @@ class THSystem(object):
                 if isinstance(env, THSuperComponent):
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
                                         env.sub_comp[-2].T[t_idx].magnitude,
-                                        h=component.h(t_idx).magnitude,
+                                        h=d['h'].h(component.temp(t_idx)).magnitude,
                                         k=component.thermal_conductivity(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
-                                            h=component.h(t_idx).magnitude,
+                                            h=d['h'].h(component.temp(t_idx)).magnitude,
                                             A=d['area'])
                     assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
                     convection from %s to %s, from low temperature %f to
@@ -92,10 +92,10 @@ class THSystem(object):
                         Tr, Qconv)
                 else:
                     if isinstance(component.mat, LiquidMaterial):
-                        h_conv = component.h(t_idx)
+                        h_conv = d['h'].h(component.temp(t_idx))
                     else:
                         if isinstance(env.mat, LiquidMaterial):
-                            h_conv = component.h(t_idx)
+                            h_conv = d['h'].h(component.temp(t_idx))
                         else:
                             msg = 'neither of the components are liquid:'
                             msg += env.name

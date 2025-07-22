@@ -199,15 +199,18 @@ class THComponent(object):
         :rtype: quantity in units $W/ k / m^2$
         """
 
-        rhoc = self.hm.dm.rho(self.temp(timestep))
-        kc = self.hm.km.k(self.temp(timestep))
-        muc = self.hm.vm.mu(self.temp(timestep))
+        if self.hm is None:
+            return None
+        else:
+            rhoc = self.hm.dm.rho(self.temp(timestep))
+            kc = self.hm.km.k(self.temp(timestep))
+            muc = self.hm.vm.mu(self.temp(timestep))
 
-        h_ret = self.hm.h(rho = rhoc,
-                         mu = muc,
-                         k = kc)
-        
-        return h_ret
+            h_ret = self.hm.h(rho = rhoc,
+                            mu = muc,
+                            k = kc)
+            
+            return h_ret
 
     def update_temp(self, timestep, temp):
         """Updates the temperature
@@ -223,7 +226,8 @@ class THComponent(object):
         return self.T[timestep]
     
 ### TODO make graphs for rho and mu in the output graphs
-### TODO make heat capacity models similar to everything else  
+### TODO make heat capacity models similar to everything else
+### TODO discuss if we want to make h_arr or k_arr or cp_arr -- if that is useful information  
 
     def update_properties(self, timestep, temp):
         """
@@ -460,10 +464,8 @@ class THSuperComponent(THComponent):
 
         ret = (-h / k * t_env + t_innercomp / dr)
         denom = (1 / dr - h / k)
-        if k == 0 or np.isnan(denom):
-            raise ZeroDivisionError(f"Invalid denominator in compute_tr: dr={dr} \n h={h} \n k={k}  \n k_arr[0] = {self.k_arr[0]} \n h_arr[0] = {self.h_arr[0]}")
-        else:
-            return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
+
+        return ret / denom
 
     def add_component(self, a_component):
         self.sub_comp.append(a_component)

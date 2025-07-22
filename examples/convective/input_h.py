@@ -155,13 +155,8 @@ h_cool = ConvectiveModel(
     m_flow= m_flow,
     a_flow= void_av * math.pi * (r_FuelRegion)**2,
     length_scale= 2.0 * (r_shell) ,
+    T0 = t_cool,
     model='wakao')
-
-conv = GlobalConvection(name='flibe',
-                        mat=Cool,
-                        rad=r_fuel,
-                        hm=h_cool
-)
 
 t_inlet = units.Quantity(600.0, units.degC)
 

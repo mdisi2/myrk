@@ -152,14 +152,20 @@ class ConvectiveModel(object):
         :type k: float
         """
 
+    #     if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
+    #         raise ValueError(
+    #             f"Model is lacking Properties and/or Temperature\n"
+    #             f"temp = {temp}\n"
+    #             f"rho = {rho}\n"
+    #             f"mu = {mu}\n"
+    #             f"k = {k}"
+    # )
+        
+        #hopefully fixes first timestep issue
         if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
-            raise ValueError(
-                f"Model is lacking Properties and/or Temperature\n"
-                f"temp = {temp}\n"
-                f"rho = {rho}\n"
-                f"mu = {mu}\n"
-                f"k = {k}"
-    )
+            rho = self.rho(self.T0)
+            mu = self.mu(self.T0)
+            k = self.k(self.T0)
 
         if rho.magnitude == 0.0:
             rho = self.rho(temp)
