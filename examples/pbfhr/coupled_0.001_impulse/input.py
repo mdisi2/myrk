@@ -130,7 +130,7 @@ spectrum = "thermal"
 feedback = True
 
 # External Reactivity
-from reactivity_insertion import ImpulseReactivityInsertion
+from pyrk.reactivity_insertion import ImpulseReactivityInsertion
 rho_ext = ImpulseReactivityInsertion(timer=ti,
                                      t_start=1.0 * units.seconds,
                                      t_end=2.0 * units.seconds,

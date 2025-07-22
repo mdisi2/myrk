@@ -83,7 +83,7 @@ spectrum = "fast"
 feedback = True
 
 # External Reactivity
-from reactivity_insertion \
+from pyrk.reactivity_insertion \
     import ImpulseReactivityInsertion as pulse
 rho_ext = pulse(timer=ti,
                 t_start=1.0 * units.seconds,

@@ -84,7 +84,7 @@ spectrum = "fast"
 feedback = False
 
 # External Reactivity
-from reactivity_insertion import ReactivityInsertion
+from pyrk.reactivity_insertion import ReactivityInsertion
 rho_ext = ReactivityInsertion(timer=ti)
 # rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0*units.seconds,
 #                                  rho_init=0.0*units.delta_k,
