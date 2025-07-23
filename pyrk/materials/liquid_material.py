@@ -3,6 +3,7 @@ from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.viscosity_model import ViscosityModel
 from pyrk.conductivity_model import ConductivityModel
+from pint.errors import DimensionalityError
 
 
 class LiquidMaterial(Material):
@@ -32,7 +33,20 @@ class LiquidMaterial(Material):
         :type vm: ViscosityModel object, pint.unit.Quantity :math:`Pa.s`
         """
         Material.__init__(self, name, km, cp, dm)
-        self.vm = vm
+        
+        # Quantity Case
+        if not isinstance(vm,ViscosityModel):
+            if hasattr(vm,'units'):
+                try:
+                    vm.to('pascal * second')
+                except DimensionalityError:
+                    raise ValueError("Dynamic Viscosity must have units of" \
+                    " \n pascal *  second")
+            self.vm = ViscosityModel(a=vm,
+                                    model='constant')
+        else:
+            self.vm = vm
+
 
     def mu(self, temp):
         """

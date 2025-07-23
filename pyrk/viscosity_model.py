@@ -11,7 +11,7 @@ class ViscosityModel(object):
                  a=0 * units.pascal * units.second,
                  b=0 * units.kelvin,
                  c=0,
-                 model="exponential"):
+                 model="constant"):
         """
         Initializes the ViscosityModel object.
 

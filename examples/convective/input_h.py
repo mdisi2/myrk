@@ -73,11 +73,10 @@ vol_shell = vol_sphere(r_shell) - vol_sphere(r_fuel)
 vol_cool = (vol_mod + vol_fuel + vol_shell) * 0.4 / 0.6
 a_pb = area_sphere(r_shell)
 
-
 # regions
-r_FuelRegion = 1.05 * units.meter
-r_ModRegion = 1.25 * units.meter
 void_av = 0.4
+r_reflin = 0.35 * units.meter
+r_reflout = 1.05 * units.meter
 
 
 #############################################
@@ -117,20 +116,28 @@ rho_ext = StepReactivityInsertion(timer=ti,
 nsteps = 5000
 
 # Moderator Initialization
-k_mod = ConductivityModel(a=17*units.watt 
-                        / (units.meter * units.kelvin), model="constant")
+k_mod = ConductivityModel(a=17*units.watt / 
+                          (units.meter * units.kelvin),
+                        model="constant")
 cp_mod = 1650.0 * units.joule / (units.kg * units.kelvin)
-rho_mod = DensityModel(a=1740. * units.kg / (units.meter**3), model="constant")
-Moderator = Material('mod', k_mod, cp_mod, rho_mod)
+rho_mod = DensityModel(a=1740. * units.kg / (units.meter**3),
+                        model="constant")
+Moderator = Material('mod', km=k_mod, 
+                            cp=cp_mod, 
+                            dm=rho_mod)
 
 
 # Fuel Initialization
 k_fuel = ConductivityModel(a=15*units.watt 
-                         /(units.meter * units.kelvin), model="constant")
+                         /(units.meter * units.kelvin),
+                           model="constant")
 cp_fuel = 1818.0 * units.joule / units.kg / units.kelvin
 rho_fuel = DensityModel(a=2220.0 * units.kg /
-                        (units.meter**3), model="constant")
-Fuel = Material('fuel', k_fuel, cp_fuel, rho_fuel)
+                        (units.meter**3),
+                        model="constant")
+Fuel = Material('fuel', km=k_fuel, 
+                        cp=cp_fuel, 
+                        dm=rho_fuel)
 
 
 # Shell Initialization
@@ -139,23 +146,25 @@ k_shell = ConductivityModel(a=17 * units.watt
 cp_shell = 1650.0 * units.joule / (units.kg * units.kelvin)
 rho_shell = DensityModel(a=1740. * units.kg /
                          (units.meter**3), model="constant")
-Shell = Material('shell', k_shell, cp_shell, rho_shell)
+Shell = Material('shell', km=k_shell,
+                          cp=cp_shell,
+                          dm=rho_shell)
 
 
 # Coolant Initializations
 from pyrk.materials.flibe import Flibe
 Cool = Flibe()
 
-# Coolant flow properties
+# Coolant Flow
 m_flow = 976.0 * units.kg / units.seconds
 
-# convection from coolant to all other components
+# Convection from coolant to all other components
 h_cool = ConvectiveModel(
     mat= Cool,
     m_flow= m_flow,
-    a_flow= void_av * math.pi * (r_FuelRegion)**2,
-    length_scale= 2.0 * (r_shell) ,
-    T0 = t_cool,
+    a_flow= void_av * math.pi * (r_reflout**2 - r_reflin**2),
+    length_scale= 2.0 * (r_shell),
+    T0=t_cool,
     model='wakao')
 
 t_inlet = units.Quantity(600.0, units.degC)

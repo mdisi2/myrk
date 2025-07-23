@@ -47,6 +47,9 @@ class ConvectiveModel(object):
         self.length_scale = length_scale
         self.T0 = T0
 
+        if T0 is None:
+            raise ValueError('Convection Model Needs Initial Coolant Temp (K)')
+
         self.implemented = {'constant': self.constant,
                             'wakao': self.wakao}
 
@@ -159,17 +162,17 @@ class ConvectiveModel(object):
         :type k: float
         """
 # First timestep
-        if temp.magnitude == 0.0 and all(prop.magnitude == 0.0 for prop in [rho, mu, k]):
+        if temp.magnitude == 0.0:
             rho = self.rho(self.T0)
             mu = self.mu(self.T0)
             k = self.k(self.T0)
 
 # If temp is plugged in instead of rho, mu, or k
-        if rho.magnitude == 0.0:
+        elif rho.magnitude == 0.0:
             rho = self.rho(temp)
-        if mu.magnitude == 0.0 :
+        elif mu.magnitude == 0.0 :
             mu = self.mu(temp)
-        if k.magnitude == 0.0  :
+        elif k.magnitude == 0.0  :
             k = self.k(temp)
 
         u = self.m_flow / self.a_flow / rho
