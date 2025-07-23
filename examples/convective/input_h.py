@@ -17,7 +17,6 @@ from pyrk.convective_model import ConvectiveModel
 from pyrk.density_model import DensityModel
 from pyrk.conductivity_model import ConductivityModel
 from pyrk.timer import Timer
-from pyrk.global_convection import GlobalConvection
 
 #############################################
 #

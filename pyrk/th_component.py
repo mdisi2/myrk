@@ -88,18 +88,7 @@ class THComponent(object):
         self.ri = ri.to('meter')
         self.ro = ro.to('meter')
 
-        #Property Arrays
-        
-        if self.dm.model != 'constant': 
-            self.rho_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                                dtype=float), units.kg/(units.meter**3))
-            self.rho_arr[0] = mat.dm.rho(self.T0)
-
-        if isinstance(mat, LiquidMaterial) and self.vm.model != 'constant':
-            self.mu_arr = units.Quantity(np.zeros(shape=(timer.timesteps(),),
-                                        dtype=float), units.pascal * units.second)
-            
-            self.mu_arr[0] = self.vm.mu(self.T0)
+# TODO property arrays for mu and rho?
 
 
     def mesh(self, size):
@@ -225,23 +214,6 @@ class THComponent(object):
 ### TODO make graphs for rho and mu in the output graphs
 ### TODO make heat capacity models similar to everything else
 ### TODO discuss if we want to make h_arr or k_arr or cp_arr -- if that is useful information  
-
-    def update_properties(self, timestep, temp):
-        """
-        Updates the property arrays according
-        to the temperature at the given timestep
-
-        rho_arr and if applicable mu_arr
-
-        :param t_idx: timestep
-        :type t_idx: int
-        
-        """
-
-        if timestep > 0:
-            self.rho_arr[timestep] = self.dm.rho(temp)
-            if hasattr(self, "mu_arr"):
-                self.mu_arr[timestep] = self.vm.mu(temp)
 
 
     def dtemp(self, timestep):

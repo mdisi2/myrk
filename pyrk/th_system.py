@@ -59,13 +59,13 @@ class THSystem(object):
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
+                                            #env.rho(t_idx)
+                                            h=d['h'].h(temp=env.temp(t_idx),
+                                                      rho=env.rho(t_idx),
+                                                      mu=env.mu(t_idx),
+                                                      k=env.thermal_conductivity(t_idx)).magnitude,
 
-                                            h=d['h'].h(temp=component.temp(t_idx),
-                                                      rho=component.rho(t_idx),
-                                                      mu=component.mu(t_idx),
-                                                      k=component.thermal_conductivity(t_idx)).magnitude,
-
-                                            k=component.thermal_conductivity(t_idx).magnitude,
+                                            k=env.thermal_conductivity(t_idx).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
@@ -172,8 +172,8 @@ class THSystem(object):
         :type t_env: float
         :param h: convective heat transfer coefficient
         :type h: float
-        :param k: thermal conduction
-        :type k: float
+        :param k: conduction coefficient
+        :type: float
         :param R: outer radius of the component
         :type R: float
         :return: dimensionless quantity of Qconv
