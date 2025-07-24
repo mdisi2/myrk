@@ -15,9 +15,13 @@ from pyrk.db import database
 from pyrk.utilities import logger
 from pyrk.utilities import plotter
 from pyrk.utilities.logger import pyrklog
+from pyrk.utilities.progressbar import ProgressBar
 from pyrk.inp import sim_info
 from pyrk.utilities.ur import units
 import os
+import cProfile #urrrr
+import pstats
+import io
 
 
 def update_n(t, y_n, si):
@@ -170,6 +174,7 @@ def solve(si, y, infile):
     th = ode(f_th).set_integrator('dopri5', nsteps=infile.nsteps)
     th.set_initial_value(y0_th(si), si.timer.t0.magnitude)
     th.set_f_params(si)
+    progress = ProgressBar()
     while (n.successful() and
            n.t < si.timer.tf.magnitude and
            th.t < si.timer.tf.magnitude):
@@ -179,6 +184,7 @@ def solve(si, y, infile):
         update_n(n.t, n.y, si)
         th.integrate(si.timer.current_time().magnitude)
         update_th(th.t, n.y, th.y, si)
+        progress.bar_update(si.timer)
     return si.y
 
 
@@ -234,6 +240,8 @@ def load_infile(infile_path):
 
 
 def main(args, curr_dir):
+    profile = cProfile.Profile()
+    profile.enable()
     np.set_printoptions(precision=5, threshold=np.inf)
     logger.set_up_pyrklog(args.logfile)
     infile = load_infile(args.infile)
@@ -263,6 +271,16 @@ def main(args, curr_dir):
     out_db.close_db()
     print(si.plotdir)
     plotter.plot(sol, si)
+    profile.disable()
+    # Print profiler stats to terminal and log
+    s = io.StringIO()
+    stats = pstats.Stats(profile, stream=s)
+    stats.sort_stats('cumulative').print_stats(50)
+    # Print to terminal
+    print("\nProfiler Stats:\n" + s.getvalue())
+    # Print to logger
+    pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
+    profile.dump_stats('profile_output')
     pyrklog.critical("\nSimulation succeeded.\n")
 
 
