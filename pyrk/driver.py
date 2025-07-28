@@ -271,6 +271,8 @@ def main(args, curr_dir):
     out_db.close_db()
     print(si.plotdir)
     plotter.plot(sol, si)
+
+    ## Profiler Treatment
     profile.disable()
     # Print profiler stats to terminal and log
     s = io.StringIO()
@@ -280,7 +282,8 @@ def main(args, curr_dir):
     print("\nProfiler Stats:\n" + s.getvalue())
     # Print to logger
     pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
-    profile.dump_stats('profile_output')
+    profile.dump_stats(args.profilerstats)
+
     pyrklog.critical("\nSimulation succeeded.\n")
 
 
@@ -288,15 +291,20 @@ def main(args, curr_dir):
 if __name__ == "__main__":
     curr_dir = os.path.dirname(__file__)
     ap = argparse.ArgumentParser(description='PyRK parameters')
-    ap.add_argument('--infile', help='the name of the input file',
+    ap.add_argument('--infile',
+                    help='the name of the input file',
                     default='input')
-    ap.add_argument('--logfile', help='the name of the log file',
+    ap.add_argument('--logfile',
+                    help='the name of the log file',
                     default='pyrk.log')
-    ap.add_argument(
-        '--plotdir',
-        help='the name of the directory of output plots',
-        default='images')
-    ap.add_argument('--outfile', help='the name of the output database',
+    ap.add_argument('--plotdir',
+                    help='the name of the directory of output plots',
+                    default='images')
+    ap.add_argument('--outfile', 
+                    help='the name of the output database',
                     default='pyrk.h5')
+    ap.add_argument('--profilerstats',
+                    help='the name of the profiler stats file',
+                    default='pyrk.prof')
     args = ap.parse_args()
     main(args, curr_dir)

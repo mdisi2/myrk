@@ -30,9 +30,13 @@ class ProgressBar(object):
 
         progress = timer.current_timestep()
         total_len = timer.timesteps()
-        percent = progress / total_len
-        filled_len = int(percent * self.bar_len)
-        bar = self.fill * filled_len + "-" * (self.bar_len - filled_len)
+        if progress == total_len:
+            bar = total_len * self.fill
+            percent = int(1)
+        else:
+            percent = progress / total_len
+            filled_len = int(percent * self.bar_len)
+            bar = self.fill * filled_len + "-" * (self.bar_len - filled_len)
 
 
         #ETA treatment
