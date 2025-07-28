@@ -60,7 +60,7 @@ class THSystem(object):
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
                                             #env.rho(t_idx)
-                                            h=d['h'].h(temp=env.temp(t_idx),
+                                            h=d['h'].h(#temp=env.temp(t_idx),
                                                       rho=env.rho(t_idx),
                                                       mu=env.mu(t_idx),
                                                       k=env.thermal_conductivity(t_idx)).magnitude,
@@ -85,7 +85,7 @@ class THSystem(object):
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
                                         env.sub_comp[-2].T[t_idx].magnitude,
 
-                                        h=d['h'].h(temp=component.temp(t_idx),
+                                        h=d['h'].h(#temp=component.temp(t_idx),
                                                    rho=component.rho(t_idx),
                                                    mu=component.mu(t_idx),
                                                    k=component.thermal_conductivity(t_idx)).magnitude,
@@ -93,7 +93,7 @@ class THSystem(object):
                                         k=component.thermal_conductivity(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
-                                            h=d['h'].h(temp=component.temp(t_idx),
+                                            h=d['h'].h(#temp=component.temp(t_idx),
                                                        rho=component.rho(t_idx),
                                                        mu=component.mu(t_idx),
                                                        k=component.thermal_conductivity(t_idx)).magnitude,
@@ -105,13 +105,13 @@ class THSystem(object):
                         Tr, Qconv)
                 else:
                     if isinstance(component.mat, LiquidMaterial):
-                        h_conv = d['h'].h(temp=component.temp(t_idx),
+                        h_conv = d['h'].h(#temp=component.temp(t_idx),
                                           rho=component.rho(t_idx),
                                           mu=component.mu(t_idx),
                                           k=component.thermal_conductivity(t_idx)).magnitude
                     else:
                         if isinstance(env.mat, LiquidMaterial):
-                            h_conv = d['h'].h(temp=component.temp(t_idx),
+                            h_conv = d['h'].h(#temp=component.temp(t_idx),
                                               rho=component.rho(t_idx),
                                               mu=component.mu(t_idx),
                                               k=component.thermal_conductivity(t_idx)).magnitude
