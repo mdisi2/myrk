@@ -47,11 +47,12 @@ class ConvectiveModel(object):
         self.length_scale = length_scale
         self.T0 = T0
 
-        if T0 is None:
-            raise ValueError('Convection Model Needs Initial Coolant Temp (K)')
 
         self.implemented = {'constant': self.constant,
                             'wakao': self.wakao}
+        
+        if T0 is None and model != 'constant' :
+            raise ValueError('Convection Model Needs Initial Coolant Temp (K)')
 
         if model in self.implemented.keys():
             self.model = model
@@ -91,7 +92,11 @@ class ConvectiveModel(object):
                                             mu.to(units.pascal * units.second),
                                             k.to(units.watt / units.kelvin / units.meter))
 
-    def constant(self):
+    def constant(self, 
+                 temp=None, 
+                 rho=None, 
+                 mu=None,
+                 k=None):
         """
         Returns a constant heat transfer coefficient: h0
 
