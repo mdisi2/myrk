@@ -56,14 +56,13 @@ class THSystem(object):
                 to_ret -= Qcent / cap
             for interface, d in six.iteritems(component.convBC):
                 env = self.comp_from_name(interface)
-                temp = env.temp(t_idx)
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
-                                            h=d['h'].h(rho=env.rho(temp),
-                                                      mu=env.mu(temp),
-                                                      k=env.thermal_conductivity(temp)).magnitude,
-                                            k=env.thermal_conductivity(temp).magnitude,
+                                            h=d['h'].h(rho=env.rho(t_idx),
+                                                      mu=env.mu(t_idx),
+                                                      k=env.thermal_conductivity(t_idx)).magnitude,
+                                            k=env.thermal_conductivity(t_idx).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
