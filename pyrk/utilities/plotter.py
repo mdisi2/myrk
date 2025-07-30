@@ -56,12 +56,20 @@ def plot_power(x, y, si):
 def plot_power_w_reactivity(x, si, y):
     power = y[:, 0]
     rho = si.ne._rho
-    plt.plot(x, power, color=my_colors(0, 2), marker='.', label="Power")
-    plt.plot(x, rho, color=my_colors(1, 2), marker='.',
+    fig,ax1=plt.subplots()
+    ax1.plot(x, power, color=my_colors(0, 2), marker='.', label="Power")
+    ax1.set_xlabel('Time [s]')
+    ax1.set_ylabel('Power', color=my_colors(0,2))
+    ax1.tick_params(axis='y',labelcolor=my_colors(0,2))
+
+    ax2=ax1.twinx()
+    ax2.plot(x, rho, color=my_colors(1, 2), marker='.',
              label="External Reactivity")
-    plt.legend()
-    plt.xlabel("Time [s]")
-    plt.ylabel("Power and Reactivity [$\Delta k$]")
+    ax2.set_ylabel('Reactivity [$\Delta k$]',color=my_colors(1,2))
+    ax2.tick_params(axis='y',labelcolor=my_colors(1,2))
+
+    ax1.legend(loc='upper right')
+    ax2.legend(loc='upper left')
     plt.title("Power and Reactivity [$\Delta k$]")
     saveplot("pow_and_rho", plt, si.plotdir)
 
