@@ -149,7 +149,7 @@ class ConvectiveModel(object):
         return self.dm.rho(temp)
     
     def wakao(self,
-              temp=0.0 * units.kelvin,
+              temp=None,
               rho=0.0 * (units.kg / units.meter**3),
               mu=0.0* (units.pascal * units.second),
               k=0.0 * (units.watt / units.kelvin / units.meter)):
@@ -166,23 +166,22 @@ class ConvectiveModel(object):
         :param k: the thermal conductivity of the object
         :type k: float
         """
-# First timestep
+        # Use temperature-dependent properties if temp is provided
         if temp.magnitude == 0.0:
+            # First timestep case - use initial temperature
             rho = self.rho(self.T0)
             mu = self.mu(self.T0)
             k = self.k(self.T0)
-
-# If temp is plugged in instead of rho, mu, or k
-        elif rho.magnitude == 0.0:
+        else:
+            # Use temperature-dependent properties
             rho = self.rho(temp)
-        elif mu.magnitude == 0.0 :
             mu = self.mu(temp)
-        elif k.magnitude == 0.0  :
             k = self.k(temp)
-
+        
         u = self.m_flow / self.a_flow / rho
         Re = rho * self.length_scale * u / mu
         Pr = self.cp * mu / k
         Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
         ret = Nu * k / self.length_scale
+        
         return ret
