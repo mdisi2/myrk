@@ -59,9 +59,7 @@ class THSystem(object):
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
-                                            h=d['h'].h(rho=env.rho(t_idx),
-                                                      mu=env.mu(t_idx),
-                                                      k=env.thermal_conductivity(t_idx)).magnitude,
+                                            h=d['h'].h(temp=env.temp(t_idx)).magnitude,
                                             k=env.thermal_conductivity(t_idx).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
@@ -80,19 +78,13 @@ class THSystem(object):
                 env = self.comp_from_name(interface)
                 if isinstance(env, THSuperComponent):
                     temp = component.temp(t_idx)
-                    (rho,mu,kc) = self.conv_properties(d['h'],temp)
-
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
                                         env.sub_comp[-2].T[t_idx].magnitude,
-                                        h=d['h'].h(rho=rho,
-                                                   mu=mu,
-                                                   k=kc).magnitude,
+                                        h=d['h'].h(temp=temp).magnitude,
                                         k=component.thermal_conductivity(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
-                                            h=d['h'].h(rho=rho,
-                                                       mu=mu,
-                                                       k=kc).magnitude,
+                                            h=d['h'].h(temp=temp).magnitude,
                                             A=d['area'])
                     assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
                     convection from %s to %s, from low temperature %f to
@@ -102,17 +94,11 @@ class THSystem(object):
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         temp = component.temp(t_idx)
-                        (rho,mu,kc) = self.conv_properties(d['h'],temp)
-                        h_conv = d['h'].h(rho=rho,
-                                          mu=mu,
-                                          k=kc).magnitude
+                        h_conv = d['h'].h(temp=temp).magnitude
                     else:
                         if isinstance(env.mat, LiquidMaterial):
                             temp = component.temp(t_idx)
-                            (rho,mu,kc) = self.conv_properties(d['h'],temp)
-                            h_conv = d['h'].h(rho=rho,
-                                              mu=mu,
-                                              k=kc).magnitude
+                            h_conv = d['h'].h(temp=temp).magnitude
                         else:
                             msg = 'neither of the components are liquid:'
                             msg += env.name
@@ -316,19 +302,3 @@ class THSystem(object):
         used for the th/th_params table
         """
         return self.comp_from_name(component).metadata()
-    
-    def conv_properties(self,dh,temp):
-        """
-        Since this gets duplicated so many times,
-        Returns the properties for the convective model
-
-        :param dh: the dictionary key for the convective model
-        :param: temp 
-        :temp type: Quantity units.kelvin
-        :return: (rho,mu,k)
-        """
-
-        rho = dh.rho(temp)
-        mu= dh.mu(temp)
-        k = dh.k(temp)
-        return rho, mu, k
