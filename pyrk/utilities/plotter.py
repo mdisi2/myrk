@@ -5,7 +5,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmx
 import matplotlib.colors as colors
-
+#plt.style.use(os.path.join(os.path.dirname(__file__),'plotting.mplstyle'))
 
 def my_colors(num, n):
     """Returns a nice looking color map"""

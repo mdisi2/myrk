@@ -45,7 +45,7 @@ t0 = 0.00 * units.seconds
 dt = 0.005 * units.seconds
 
 # Final Time
-tf = 5.0 * units.seconds
+tf = 10.0 * units.seconds
 
 
 def area_sphere(r):
