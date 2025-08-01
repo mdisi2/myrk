@@ -59,8 +59,8 @@ class THSystem(object):
                 QconvBC = self.convBoundary(component,
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
-                                            h=d['h'].h(temp=env.temp(t_idx)).magnitude,
-                                            k=env.thermal_conductivity(t_idx).magnitude,
+                                            h=d['h'].h(temp=env.T[t_idx]).magnitude,
+                                            k=env.thermal_conductivity(env.T[t_idx]).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
