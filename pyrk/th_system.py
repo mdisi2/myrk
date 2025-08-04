@@ -60,7 +60,7 @@ class THSystem(object):
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
                                             h=d['h'].h(temp=env.T[t_idx]).magnitude,
-                                            k=env.thermal_conductivity(env.T[t_idx]).magnitude,
+                                            k=env.thermal_conductivity(t_idx).magnitude,
                                             R=d["R"])
                 to_ret -= QconvBC / cap
             if component.heatgen:
@@ -79,9 +79,9 @@ class THSystem(object):
                 if isinstance(env, THSuperComponent):
                     temp = component.temp(t_idx)
                     Tr = env.compute_tr(component.T[t_idx].magnitude,
-                                        env.sub_comp[-2].T[t_idx].magnitude,
-                                        h=d['h'].h(temp=temp).magnitude,
-                                        k=component.thermal_conductivity(t_idx).magnitude)
+                                        env.sub_comp[-2].T[t_idx].magnitude)
+                                        #h=d['h'].h(temp=temp).magnitude,
+                                        #k=component.thermal_conductivity(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(temp=temp).magnitude,

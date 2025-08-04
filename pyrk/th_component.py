@@ -416,20 +416,19 @@ class THSuperComponent(THComponent):
         self.add_conduction_in_mesh()
         self.alpha_temp = 0.0 * units.delta_k / units.kelvin
 
-    def compute_tr(self, t_env, t_innercomp, h,k ):
+    def compute_tr(self, t_env, t_innercomp): #, h,k ):
         '''compute temperature at r=R for the sphere from the temperature at r=R-dr
         and the temperature of the env/fluid/coolant
 
-        :param t_env: temperature of the component(env) that self tranfers
-          heat with
+        :param t_env: temperature of the component(env) that self tranfers heat with
         :type t_env: float
         :param t_innercomp: temperature of the component that is inside self
         :type t_innercomp: float
         '''
         for envname, d in six.iteritems(self.conv):
-            # h = self.conv[envname]["h"].h(env.rho(t_env)).magnitude
-            # k = self.conv[envname]["k"].magnitude
-            dr = self.conv[envname]["dr"].magnitude
+            h = self.conv[envname]['h'].h(t_env * units.kelvin)
+            k = self.conv[envname]['k'].k(t_env * units.kelvin) #double check to make sure this is pointing to temperature dependent function
+            dr = self.conv[envname]["dr"]
 
         ret = (-h / k * t_env + t_innercomp / dr)
         denom = (1 / dr - h / k)

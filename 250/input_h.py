@@ -222,7 +222,7 @@ comp_list.extend(shell.mesh(l))
 pebble = th.THSuperComponent('pebble', t_shell, comp_list, timer=ti)
 
 # Add convective boundary condition to the pebble
-pebble.add_conv_bc('cool', h=h_cool, k=Cool.km.k(t_cool))
+pebble.add_conv_bc('cool', h=h_cool, k=Cool.km)
 
 # The coolant convects to the shell
 cool.add_convection('pebble', h=h_cool, area=a_pb)
