@@ -21,6 +21,7 @@ h_cool = ConvectiveModel(
     T0=t_cool,
     model='wakao')
 
+print(h_cool.h(temp=t_cool))
 
 t = [700 * units.kelvin, 
      800 * units.kelvin,
@@ -31,5 +32,12 @@ h_ar = []
 for i in t:
     h_ar.append(h_cool.h(temp=i).magnitude)
 
-plt.plot(h_ar)
+plt.rcParams['font.family'] = 'serif'
+plt.plot([i.magnitude for i in t], h_ar, label='Heat Transfer Coefficient')
+plt.xlabel('Temperature [K]')
+plt.ylabel(r'h $\frac{W}{K \cdot m^2}$')
+plt.title('Heat Transfer Coefficient at Different Temperatures')
+plt.grid()
+plt.legend()
+plt.savefig('convective_model_test.png', dpi=300, format='png')
 plt.show()
