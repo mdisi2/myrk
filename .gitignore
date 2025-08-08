@@ -1,7 +1,7 @@
 # Ignore possible build & documentation
 docs/_build/
 build/
-pyrk\.egg_info/
+pyrk.egg_info/
 dist/
 RELEASE\-VERSION
 pyrk/RELEASE\-VERSION
@@ -38,6 +38,7 @@ matplotlibrc
 *.serr
 *.err
 *.sub
+
 
 # Ignore mergetool temp file
 *.orig

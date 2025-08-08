@@ -5,39 +5,80 @@ import os
 import h5py
 plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
 
+# TODO convert into an object so the module can be imported to plotter
+# TODO clean up all code its so poor
+# TODO Think of a the actual intent. This was meant to compare 
+#      multiple simulation together, I don't neccesarily think
+#      we should replace the current plotting function. Maybe 
+#      this can live inside the current plotting function as 
+#      a secondary utility?
 
-### Each timestep is a table with an array of all the components in a repeating loop. 
-### There is also a corresponding temperature array that loops each timestep with the
-### temp at the same index for that particular component. Meaning if mod0 is at component[0],
-### then the temp for the component is at temp[0]. And if I had 5 components, mod0 at the
-### second timestep would be like component[6] temp[6] MEANING I am going to use modulololo
-### opporator methinks
+# The thermal hydralic portion stores two arrays,
+# the component array and the temp array. The 'component'
+# array is a continous list of the names of the components,
+# looping every timestep. The temp array holds the temp for 
+# corresponding index of the component, also looping every 
+# timestep. Meaning Comp[0] and Temp[0] refer to the first 
+# component's temperature at the first timestep. If I have 5 
+# components, then Comp[5] and Temp[5] refer to the same 
+# component at the second timestep. There is probably a better
+# way using enumerate to match all these up to one another than
+# what I did using the modulo opporator and np.unique.  
 
 
-### Need to check where the data is stored for the neutronics and make functions for those
-### or add lines to the functions
+class H5Processor(object):
 
+    """
+    This class handles post-processing of h5 database
+    files for reconstructing plots or comparing multiple 
+    simulations together
+    """
 
-# TODO determine if a script or a class
-# TODO parse through neutronics, probably similar th_timeseries
+    def __init__(self,
+                 infile = None,
+                 names = None,
+                 plotdir = None):
+        
+        if not isinstance(infile,[]):
+            self.infile = list(infile)
+        else:
+            self.infile = infile
+        if not isinstance(names,[]):
+            self.names = list(names)
+        else:
+            self.names = names
+
+        self.plotdir = plotdir
+
+        assert len(self.infile) == len(self.names), 'Number of simulations and corresponding names must match!'
+        if len(self.infile) > 1:
+            self.multisim = True
+
+        """
+        :param infile: Paths to .h5 files
+        :infile type: list or str when singular sim
+        :param names: Names of .h5 files for graphing and storage
+        :type names: list or str when singular sim
+        :param plotdir: Directory of output files
+        :type plotdir: os path
+        """
+
 
 
 def color(n):
-    t = ["#332288", "#117733",
-         "#44AA99", "#88CCEE", 
-         "#DDCC77", "#CC6677", 
-         "#AA4499", "#882255"]
-    return t[n]
+    colors = ["#332288", "#117733",
+              "#44AA99", "#88CCEE", 
+              "#DDCC77", "#CC6677", 
+              "#AA4499", "#882255"]
+    return colors[n]
 
-
-def plot_singular(infilelist,plotdir):
+def plot_singular_th(infilelist,names,plotdir):
 
     """
     Constructs the graphs for the components given the database file
 
     :param infilelist: H5 file path
     :param plotdir: the output directory
-    
     """
 
     infile = infilelist[0]
@@ -67,7 +108,7 @@ def plot_singular(infilelist,plotdir):
             plt.close()
             i += 1
 
-def plot_multiple(infilelist,names,plotdir):
+def plot_multiple_th(infilelist,names,plotdir):
 
     """
     For comparison of components across multiple simulations 
@@ -109,7 +150,7 @@ def plot_multiple(infilelist,names,plotdir):
         plt.close()
 
 
-def plot_difference(infilelist, names, plotdir):
+def plot_difference_th(infilelist, names, plotdir):
     """
     Plots the absolute difference between components of 
     multiple simulations.
@@ -157,6 +198,67 @@ def plot_difference(infilelist, names, plotdir):
                 print(f"Saved {path}")
                 plt.close()
 
+
+def Neutronics(infilelist, names, plotdir):
+    """
+    Treatment for the neutronics and power
+    section of the database.
+    """
+    multi = (len(infilelist) > 1)
+
+    for infile in infilelist:
+        x = infilelist.index(infile)
+        with h5py.File(infile) as f:
+            n = f['neutronics']['neutronics_params']
+            m = f['metadata']['sim_timeseries']
+            t = f['metadata']['sim_info']
+            t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
+
+            fig, ax1 = plt.subplots()
+            ax1.plot(t_arr, m['power'], label='Power (Normalized)', color="#332288")
+            ax1.set_xlabel('Time [s]')
+            ax1.set_ylabel('Power [watts]')
+            ax1.tick_params(axis='y', color="#332288")
+
+            ax2 = ax1.twinx()
+            ax2.plot(t_arr, n['rho_ext'], label='External Reactivity', color="#AA4499")
+            ax2.plot(t_arr, n['rho_tot'], label='Total Reactivity', color="#882255")
+            ax2.set_ylabel(r'Reactivity $\rho$')
+            ax2.tick_params(axis='y', color="#CC6677")
+
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
+
+            plt.title('Power vs Reactivity')
+            filepath = os.path.join(plotdir, f'{names[x]}_rho_and_power.png')
+            plt.savefig(filepath, dpi=300, format='png')
+            plt.close()
+
+    if multi:
+        data = []
+        for infile in infilelist:
+            with h5py.File(infile) as f:
+                m = f['metadata']['sim_timeseries']
+                t = f['metadata']['sim_info']
+                data.append({'time_arr': np.linspace(t['t0'], t['tf'], len(m['power'])),
+                             'p_arr': m['power']})
+
+        plt.figure()
+        for sim in data:
+            x = data.index(sim)
+            plt.plot(sim['time_arr'], sim['p_arr'], label=f'{names[x]}')
+
+        plt.title('Power Comparison')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Power [normalized]')
+        plt.legend()
+        filepath = os.path.join(plotdir, 'power_comparison.png')
+        plt.savefig(filepath, dpi=300, format='png')
+        plt.close()
+
+
+
 def main():
     """ 
     Post processing using h5 database file for
@@ -184,12 +286,12 @@ def main():
 
     # the singular infile case
     if len(args.infiles) == 1:
-        plot_singular(args.infiles, args.plotdir)
+        plot_singular_th(args.infiles, args.names, args.plotdir)
 
     # multiple infiles case
     else:
-        plot_multiple(args.infiles, args.names, args.plotdir)
-        plot_difference(args.infiles, args.names, args.plotdir)
+        plot_multiple_th(args.infiles, args.names, args.plotdir)
+        plot_difference_th(args.infiles, args.names, args.plotdir)
     
 
 if __name__ == "__main__":
