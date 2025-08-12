@@ -45,7 +45,7 @@ t0 = 0.00 * units.seconds
 dt = 0.005 * units.seconds
 
 # Final Time
-tf = 10.0 * units.seconds
+tf = 5.0 * units.seconds
 
 
 def area_sphere(r):
@@ -128,7 +128,7 @@ feedback = True
 from pyrk.reactivity_insertion import StepReactivityInsertion
 rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
-                                  rho_final= -0.005 * units.delta_k)
+                                  rho_final= 0.005 * units.delta_k)
 
 # maximum number of internal steps that the ode solver will take
 nsteps = 1000

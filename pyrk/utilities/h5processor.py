@@ -1,0 +1,305 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import h5py
+import tables
+plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
+
+# The thermal hydralic portion stores two arrays,
+# the component array and the temp array. The 'component'
+# array is a continous list of the names of the components,
+# looping every timestep. The temp array holds the temp for 
+# corresponding index of the component, also looping every 
+# timestep. Meaning Comp[0] and Temp[0] refer to the first 
+# component's temperature at the first timestep. If I have 5 
+# components, then Comp[5] and Temp[5] refer to the same 
+# component at the second timestep. There is probably a better
+# way using enumerate to match all these up to one another than
+# what I did using the modulo opporator and np.unique.  
+
+
+# As a class, it will take a list of paths and a list of names for each simulation
+
+
+# TODO : plot zetas, plot omegas
+
+# TODO : fix  EXTREMELT repetitious style plotting 
+
+
+class H5Processor(object):
+
+    """
+    This class handles post-processing of h5 database
+    files for reconstructing plots or comparing multiple 
+    simulations together
+
+      
+    :param infile: Paths to .h5 files
+    :infile type: list or str when singular sim
+    :param names: Names of .h5 files for graphing and storage
+    :type names: list of str
+    :param plotdir: Directory of output files
+    :type plotdir: os path
+
+
+    """
+
+    def __init__(self,
+                 infile = None,
+                 names = None,
+                 plotdir = None):
+        
+        if not isinstance(infile, list):
+            self.infilelist = list(infile)
+        else:
+            self.infilelist = infile
+
+        if names is None:
+            self.names = [f'Simulation {i + 1}' for i in range(len(self.infilelist))]
+        elif isinstance(names, str):
+            self.names = [names]
+        elif isinstance(names, list):
+            if len(names) != len(self.infilelist):
+                raise ValueError("Length of names must match number of input files")
+            self.names = names
+        else:
+            raise TypeError("Refer to Documentation")
+            
+        self.plotdir = plotdir
+        if self.plotdir is not None:
+            os.makedirs(self.plotdir, exist_ok=True)
+
+        if len(self.infilelist) > 1:
+            self.multisim = True
+        else:
+            self.multisim = False
+
+    def color(self,n):
+        colors = ["#332288", "#117733",
+                "#44AA99", "#88CCEE", 
+                "#DDCC77", "#CC6677", 
+                "#AA4499", "#882255"]
+        return colors[n]
+
+    def plot_thcomponent(self):
+
+        os.makedirs(os.path.join(self.plotdir,'Components'), exist_ok=True)
+
+        """
+        Constructs the graphs for the components given the database file
+
+        :param infilelist: H5 file path
+        :param plotdir: the output directory
+        """
+
+        if not self.multisim: # single sim case
+
+            infile = self.infilelist[0]
+
+            with h5py.File(infile) as file:
+                timeseries = file['th']['th_timeseries']
+                components = timeseries['component'] ### List of every component
+                temps = timeseries['temp'] ### List of every temp
+                components = np.unique(components)
+                comps = [component.decode('utf-8') for component in components]
+                data = {c : [] for c in comps}
+
+                for i in range(len(temps)):
+                    data[comps[i % len(comps)]].append(temps[i])
+
+                i = 0
+                for key in data:
+                    plt.figure()
+                    plt.plot(data[key], label=f"{key.capitalize()}", color=self.color(i % len(comps)))
+                    plt.ylabel("Temperature [K]")
+                    plt.title(f"{key.capitalize()} Temperature")
+                    path = os.path.join(self.plotdir, 'Components', f'{key.capitalize()}.png')
+                    self.style(path)
+                    print(f'Saved {path}')
+                    i += 1
+        
+        if self.multisim: #multisimulation case
+            self.plot_multiple_th()
+            self.plot_difference_th()
+
+    def plot_multiple_th(self):
+
+        """
+        For comparison of components across multiple simulations 
+
+        :param infilelist: a list of H5 file paths
+        :param plotdir: the output directory 
+        :param names: a list of the names corresponding to files
+        """
+
+        all_sims = []
+
+        for infile in self.infilelist:
+            with h5py.File(infile) as file:
+                timeseries = file['th']['th_timeseries']
+                components = timeseries['component'] ### List of every component
+                temps = timeseries['temp'] ### List of every temp
+                components = np.unique(components)
+                comps = [component.decode('utf-8') for component in components]
+                data = {c : [] for c in comps}
+
+                for i in range(len(temps)):
+                    data[comps[i % len(comps)]].append(temps[i])
+
+                all_sims.append(data)
+
+        for c in comps:
+            plt.figure()
+            for i, data_dict in enumerate(all_sims):
+                if c in data_dict:
+                    plt.plot(data_dict[c], label=f"{self.names[i]}")
+            plt.ylabel("Temperature [K]")
+            plt.title(f"{c.capitalize()} Temperature")
+            path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}_comparison.png")
+            self.style(path)
+            print(f"Saved {path}")
+
+    def plot_difference_th(self):
+
+        os.makedirs(os.path.join(self.plotdir,'Difference'), exist_ok=True)
+
+        """
+        Plots the absolute difference between components of 
+        multiple simulations.
+        
+        If the number of sims is greater than 2, 
+        the differences will be pairwise 
+
+        Ex:                 (1 & 2) , (1 & 3) , (2 & 3)
+
+        :param infilelist: a list of H5 file paths
+        :param plotdir: the output directory 
+        :param names: a list of the names corresponding to files
+        """
+        all_sims = []
+
+        for infile in self.infilelist:
+            with h5py.File(infile) as file:
+                timeseries = file['th']['th_timeseries']
+                components = timeseries['component']
+                temps = timeseries['temp']
+                components = np.unique(components)
+                comps = [component.decode('utf-8') for component in components]
+                data = {c: [] for c in comps}
+
+                for i in range(len(temps)):
+                    data[comps[i % len(comps)]].append(temps[i])
+
+                all_sims.append(data)
+
+        for c in comps:
+            for i in range(len(all_sims)):
+                for j in range(i + 1, len(all_sims)):
+
+                    diff = np.abs(np.array(all_sims[i][c]) - np.array(all_sims[j][c]))
+
+                    plt.figure()
+                    plt.plot(diff, label=f"{self.names[i]} - {self.names[j]}", color=self.color(j % len(comps)))
+                    plt.ylabel(r"$\Delta$ Temp")
+                    plt.title(f"{c.capitalize()} Absolute Difference: {self.names[i]} vs {self.names[j]}")
+                    path = os.path.join(self.plotdir, 'Difference', f"{c.capitalize()}_difference_{self.names[i]}_{self.names[j]}.png")
+                    self.style(path)
+                    print(f"Saved {path}")
+
+    def plot_neutronics(self):
+
+        os.makedirs(os.path.join(self.plotdir,'Neutronics'), exist_ok=True)
+
+        """
+        Treatment for the neutronics and power
+        section of the database.
+        """
+
+        for idx, infile in enumerate(self.infilelist):
+            with h5py.File(infile) as f:
+                n = f['neutronics']['neutronics_params']
+                m = f['metadata']['sim_timeseries']
+                t = f['metadata']['sim_info']
+                t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
+
+                figs,ax1 = plt.subplots()
+                ax1.plot(t_arr, m['power'], label='Power (Normalized)', color="#332288")
+                ax1.set_xlabel('Time [s]')
+                ax1.set_ylabel('Power [watts]')
+                ax1.tick_params(axis='y', color="#332288")
+
+                ax2 = ax1.twinx()
+                ax2.plot(t_arr, n['rho_ext'], label='External Reactivity', color="#AA4499")
+                ax2.plot(t_arr, n['rho_tot'], label='Total Reactivity', color="#882255")
+                ax2.set_ylabel(r'Reactivity $\rho$')
+                ax2.tick_params(axis='y', color="#CC6677")
+
+                lines1, labels1 = ax1.get_legend_handles_labels()
+                lines2, labels2 = ax2.get_legend_handles_labels()
+                ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
+
+                plt.title(f'Power vs Reactivity | {self.names[idx]}')
+                filepath = os.path.join(self.plotdir, 'Neutronics', f'{self.names[idx]}_rho_and_power.png')
+                self.style(filepath)
+
+        if self.multisim: #True! if mutlisim
+            data = []
+            for infile in self.infilelist:
+                with h5py.File(infile) as f:
+                    m = f['metadata']['sim_timeseries']
+                    t = f['metadata']['sim_info']
+                    data.append({'time_arr': np.linspace(t['t0'], t['tf'], len(m['power'])),
+                                'p_arr': m['power']})
+
+            plt.figure()
+            for idx, sim in enumerate(data):
+                plt.plot(sim['time_arr'], sim['p_arr'], label=f'{self.names[idx]}')
+
+            plt.title('Power Comparison')
+            plt.ylabel('Power [normalized]')
+            plt.legend()
+            filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
+            self.style(filepath)
+            print(f'Saved {filepath}')
+
+    def plot_zetas(self):
+        for idx, infile in enumerate(self.infilelist):
+            with h5py.File(infile) as f:
+                data = {}
+                zetas = f['neutronics']['zetas']
+                t = f['metadata']['sim_info']
+                t_arr = np.linspace(t['t0'], t['tf'], len(zetas['t_idx']))
+
+                precursors = np.unique(zetas['t_idx'])
+
+                
+                for pidx in precursor_indices:
+                    mask = zetas['zeta_idx'] == pidx
+                    zeta_vals = zetas[mask]
+                    
+                    plt.figure()
+                    plt.plot(t_arr, zeta_vals, label=f'Precursor {pidx}')
+                    plt.ylabel("Zeta")
+                    plt.xlabel("Time")
+                    plt.legend()
+                    plt.title(f"Zeta Over Time | {self.names[idx]} | Precursor {pidx}")
+                    
+                    path = os.path.join(self.plotdir,'Neutronics','Zetas',
+                        f'Zeta_{self.names[idx]}_precursor_{pidx}.png')
+                    self.style(path)
+                    print(f"Saved {path}")
+
+    def plot(self):
+
+        self.plot_thcomponent()
+        self.plot_neutronics()
+        self.plot_zetas()
+        self.plot_omegas()
+
+    def style(self, path):
+        plt.legend()
+        plt.grid(False)
+        plt.xlabel('Time [s]')
+        plt.tight_layout()
+        plt.savefig(path, dpi=300, format='png')
+        plt.close()
