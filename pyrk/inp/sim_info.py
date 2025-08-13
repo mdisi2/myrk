@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE
 import numpy as np
+import functools
 
 from pyrk.timer import Timer
 from pyrk import neutronics
@@ -96,7 +97,18 @@ class SimInfo(object):
             self.db.register_recorder('th', 'th_params',
                                       c.metadata,
                                       timeseries=False)
-        # TODO: for all n_pg and n_dg, report zetas and omegas
+        for z in range(self.n_pg):
+            self.db.register_recorder(
+                'neutronics', 'zetas',
+                recorder=functools.partial(self.zrecord, z),
+                timeseries=True)
+            
+        if self.n_dg > 0 :
+            for o in range(self.n_dg):
+                self.db.register_recorder(
+                    'neutronics', 'omegas',
+                    recorder=functools.partial(self.orecord, o),
+                    timeseries=True)
 
     def init_rho_ext(self, rho_ext):
         """Initializes reactivity insertion object for the none case.
@@ -211,4 +223,22 @@ class SimInfo(object):
         power = self.y[t_idx][0]
         rec = {'t_idx': t_idx,
                'power': power}
+        return rec
+    
+    def zrecord(self, i):
+        """Recorder for all DNP (zeta) groups."""
+        t_idx = self.timer.current_timestep() - 1
+        rec = {
+            "t_idx": t_idx,
+            "zeta_idx": i + 1,
+            "zeta": self.y[t_idx, i + 1]}
+        return rec
+    
+    def orecord(self, i):
+        """Recorder for all Omega groups."""
+        t_idx = self.timer.current_timestep() - 1
+        rec = {
+            "t_idx": t_idx,
+            "omega_idx": i + 1,
+            "omega": self.y[t_idx, (self.n_pg + i) + 1]}
         return rec
