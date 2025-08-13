@@ -263,26 +263,15 @@ def main(args, curr_dir):
     log_results(si)
     out_db.close_db()
     print(si.plotdir)
+    #plotter.plot(sol, si)
 
-#    plotter.plot(sol, si)
-    
-    #H5 reading
-    Sim = h5processor_setup(args)
-    Sim.plot()
+    Sim = H5Processor(infile=[args.outfile],
+                    names=[''],
+                    plotdir=args.plotdir)
+    Sim.h5plot()
 
-    
     pyrklog.critical("\nSimulation succeeded.\n")
-
-def h5processor_setup(args):
-    out     = args.plotdir
-    file    = args.outfile #the processors infile is the simulations outfile 
-    simname = [f'{os.path.splitext(os.path.basename(args.infile))[0]}']
-
-    Sim     = H5Processor(infile=file,
-                          names =simname,
-                          plotdir=out)
     
-    return Sim
 
 """Run it as a script"""
 if __name__ == "__main__":

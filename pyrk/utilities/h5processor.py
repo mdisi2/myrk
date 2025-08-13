@@ -22,8 +22,7 @@ plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
 # similar to the th treatment.
 
 # TODO fix power normalization issue
-# TODO plot_th and plot_multiple do the same thing, combine them
-# TODO fix timestep / second issue on the x axis - plot seconds
+# TODO impliment in driver main() function
 
 class H5Processor(object):
 
@@ -193,9 +192,9 @@ class H5Processor(object):
                     path = os.path.join(self.plotdir, 'Difference', f"{c.capitalize()}_difference_{self.names[i]}_{self.names[j]}.png")
                     self.style(path)
 
-    def plot_neutronics(self):
+    def plot_power_rho(self):
 
-        os.makedirs(os.path.join(self.plotdir,'Neutronics'), exist_ok=True)
+        os.makedirs(os.path.join(self.plotdir,'Neutronics','Power_and_Rho'), exist_ok=True)
 
         """
         Treatment for the neutronics and power
@@ -226,7 +225,7 @@ class H5Processor(object):
                 ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
 
                 plt.title(f'Power vs Reactivity | {self.names[idx]}')
-                filepath = os.path.join(self.plotdir, 'Neutronics', f'{self.names[idx]}_rho_and_power.png')
+                filepath = os.path.join(self.plotdir, 'Neutronics', 'Power_and_Rho' , f'{self.names[idx]}_rho_and_power.png')
                 self.style(filepath)
 
         if self.multisim is True:
@@ -284,7 +283,7 @@ class H5Processor(object):
                 plt.xlabel("Time [s]")
                 plt.title(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
                 plt.legend()
-                path = os.path.join(self.plotdir, 'Neutronics', 'Zetas', f'{self.names[x]}.png')
+                path = os.path.join(self.plotdir, 'Neutronics', 'Zetas', f'zetas_{self.names[x]}.png')
                 self.style(path)
 
     def plot_omegas(self):
@@ -322,19 +321,19 @@ class H5Processor(object):
                 plt.ylabel(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
                 plt.title(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
                 plt.legend()
-                path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'{self.names[x]}.png')
+                path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'omegas_{self.names[x]}.png')
                 self.style(path)
 
     def h5plot(self):
 
         self.plot_thcomponent()
-        self.plot_neutronics()
+        self.plot_power_rho()
         self.plot_zetas()
         self.plot_omegas()
 
     def style(self, path):
         plt.legend()
-        plt.grid(False)
+        plt.grid(True)
         plt.xlabel(r'Time $[s]$')
         plt.tight_layout()
         plt.savefig(path, dpi=300, format='png')
