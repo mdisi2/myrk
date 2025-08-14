@@ -10,7 +10,7 @@ class LiquidMaterial(Material):
 
     def __init__(self,
                  name=None,
-                 k=ConductivityModel(),
+                 km=ConductivityModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel(),
                  mu=0 * units.pascal * units.seconds):
@@ -27,6 +27,6 @@ class LiquidMaterial(Material):
         :param mu: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
         :type mu: float, pint.unit.Quantity :math:`Pa.s`
         """
-        Material.__init__(self, name, k, cp, dm)
+        Material.__init__(self, name, km, cp, dm)
         self.mu = mu.to('pascal*seconds')
         validation.validate_ge("mu", mu, 0 * units.pascal * units.seconds)

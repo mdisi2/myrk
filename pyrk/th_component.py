@@ -150,6 +150,7 @@ class THComponent(object):
         """
 
         ret = self.km.k(self.temp(timestep))
+        return ret
 
     def update_temp(self, timestep, temp):
         """Updates the temperature
