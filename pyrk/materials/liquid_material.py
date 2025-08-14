@@ -2,6 +2,7 @@ from pyrk.materials.material import Material
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.inp import validation
+from pyrk.conductivity_model import ConductivityModel
 
 
 class LiquidMaterial(Material):
@@ -9,7 +10,7 @@ class LiquidMaterial(Material):
 
     def __init__(self,
                  name=None,
-                 k=0 * units.watt / units.meter / units.kelvin,
+                 k=ConductivityModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel(),
                  mu=0 * units.pascal * units.seconds):
@@ -17,8 +18,8 @@ class LiquidMaterial(Material):
 
         :param name: The name of the component (i.e., "fuel" or "cool")
         :type name: str.
-        :param k: The thermal conductivity of the component
-        :type k: float, pint.unit.Quantity :math:'watt/meter/K'
+        :param km: The thermal conductivity of the component
+        :type km: ConductivityModel object
         :param cp: specific heat capacity, :math:`c_p`, in :math:`J/kg-K`
         :type cp: float, pint.unit.Quantity :math:`J/kg-K`
         :param dm: The density of the material

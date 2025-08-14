@@ -137,7 +137,7 @@ class THSystem(object):
         :return : Qcondction
         :rtype:float, dimensionless
         '''
-        conductivity = component.k.magnitude
+        conductivity = component.thermal_conductivity(t_idx).magnitude
         T_b = component.T[t_idx].magnitude
         dr = (component.ro - component.ri).magnitude
         return (conductivity * T_b) / (dr**2)
@@ -161,7 +161,7 @@ class THSystem(object):
         :rtype: float
         '''
         r_b = component.ro.magnitude
-        k = component.k.magnitude
+        k = component.thermal_conductivity(t_b).magnitude
         dr = component.ri.magnitude - component.ro.magnitude
         T_R = (-h.magnitude / k * t_env + t_b / dr) / \
             (1 / dr - h.magnitude / k)
@@ -194,8 +194,8 @@ class THSystem(object):
         :type t_idx: int
         :param L: conduction distance
         :type L: float, units meter
-        :pram k: conductivity
-        :type k: float, units w/mk
+        #:param k: conductivity #TODO 
+        #:type k: float, units w/mk
         :return: Qond, dimemsionless quantity
         :rtype: float
         """
@@ -204,8 +204,10 @@ class THSystem(object):
         r_b = component.ro.magnitude
         r_env = env.ro.magnitude
         dr = (component.ro - component.ri).magnitude
-        k = component.k.magnitude
-        return k / r_b * (r_b * T_b - r_env * T_env) / (dr**2)
+        km = component.thermal_conductivity(t_idx).magnitude
+        return km / r_b * (r_b * T_b - r_env * T_env) / (dr**2)
+
+        ### Changed k in function above
 
     def conduction_slab(self, component, env, t_idx, L,
                         A):
@@ -226,7 +228,7 @@ class THSystem(object):
         T_b = component.T[t_idx].magnitude
         T_env = env.T[t_idx].magnitude
         num = (T_b - T_env)
-        k = component.k
+        k = component.thermal_conductivity(t_idx)
         denom = (L / (k * A)).magnitude
         return num / denom
 

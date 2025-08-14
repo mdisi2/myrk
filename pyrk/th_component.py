@@ -62,6 +62,7 @@ class THComponent(object):
         self.k = mat.k
         self.cp = mat.cp
         self.dm = mat.dm
+        self.km = mat.km
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                          dtype=float), 'kelvin')
@@ -137,6 +138,18 @@ class THComponent(object):
         """
         ret = self.dm.rho(self.temp(timestep))
         return ret
+    
+    def thermal_conductivity(self, timestep):
+        """The thermal conductivity (k) of this
+        componenent's materials
+
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        :return: the thermal conductivity of this component
+        :rtype: float in units, watts / kelvin / meter
+        """
+
+        ret = self.km.k(self.temp(timestep))
 
     def update_temp(self, timestep, temp):
         """Updates the temperature
@@ -281,7 +294,7 @@ class THComponent(object):
         rec = {'component': self.name,
                'vol': self.vol.magnitude,
                'matname': self.mat.name,
-               'k': self.k.magnitude,
+               #'k': self.k.magnitude,
                'cp': self.cp.magnitude,
                'T0': self.T0.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
@@ -298,7 +311,7 @@ class THComponent(object):
                'component': self.name,
                'temp': self.temp(timestep).magnitude,
                'density': self.rho(timestep).magnitude,
-               'k': self.k.magnitude,
+               'k': self.thermal_conductivity(timestep).magnitude,
                'cp': self.cp.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
                'heatgen': self.heatgen,
@@ -345,7 +358,7 @@ class THSuperComponent(THComponent):
         self.add_conduction_in_mesh()
         self.alpha_temp = 0.0 * units.delta_k / units.kelvin
 
-    def compute_tr(self, t_env, t_innercomp, h):
+    def compute_tr(self, t_env, t_innercomp, h, k):
         '''compute temperature at r=R for the sphere from the temperature at r=R-dr
         and the temperature of the env/fluid/coolant
 
@@ -354,30 +367,36 @@ class THSuperComponent(THComponent):
         :type t_env: float
         :param t_innercomp: temperature of the component that is inside self
         :type t_innercomp: float
+        :param h: convective heat transfer coefficient
+        :type h: float
+        :param k: thermal conductivity (k)
+        :type k: float
         '''
         for envname, d in six.iteritems(self.conv):
             # h = self.conv[envname]["h"].h(env.rho(t_env)).magnitude
-            k = self.conv[envname]["k"].magnitude
+            # k = self.conv[envname]["k"].magnitude
             dr = self.conv[envname]["dr"].magnitude
         return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
 
     def add_component(self, a_component):
         self.sub_comp.append(a_component)
 
-    def add_conv_bc(self, envname, h):
+    def add_conv_bc(self, envname, h, k):
         '''add convective boundary condition to the supercomponent
 
         :param envname: the name of the component that self tranfer heat with
         :type envname: str
         :param h: convective heat transfer coefficient
         :type h: float
+        :param k: thermal conductivity (k)
+        :type k: float
         '''
         self.sub_comp[-2].addConvBC(envname,
                                     self.sub_comp[-1],
                                     h,
                                     (self.sub_comp)[-1].ro)
         self.conv[envname] = {'h': h,
-                              'k': self.sub_comp[-1].k,
+                              'k': k,
                               'dr': self.sub_comp[-1].ro - self.sub_comp[-1].ri
                              }
 
