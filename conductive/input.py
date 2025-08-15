@@ -145,10 +145,19 @@ Fuel_ = Material(name='fuel',
                 dm = DensityModel(a=10500.0 * units.kg / (units.meter**3),
                                   model="constant"))
 
+# Cool_Flibe = LiquidMaterial(name='cool',
+#                     km = ConductivityModel(model='linear',
+#                                             a=0.7662 * units.watt / (units.meter * units.kelvin),
+#                                             b=0.0005 * units.watt / units.kelvin / units.meter / units.kelvin),
+#                         cp= 2415.78 * units.joule / (units.kg * units.kelvin),
+#                         dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
+#                             b=-0.488 * units.kg /
+#                             (units.meter**3) / units.kelvin,
+#                             model="linear"))
+
 Cool_ = LiquidMaterial(name='cool',
-                       km = ConductivityModel(model='linear',
-                                              a=0.7662 * units.watt / (units.meter * units.kelvin),
-                                              b=0.0005 * units.watt / units.kelvin / units.meter / units.kelvin),
+                       km = ConductivityModel(model='constant',
+                                              a=1.0 * units.watt / (units.meter * units.kelvin)),
                         cp= 2415.78 * units.joule / (units.kg * units.kelvin),
                         dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /

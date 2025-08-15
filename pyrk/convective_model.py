@@ -10,6 +10,7 @@ class ConvectiveModel(object):
     def __init__(self,
                  h0=0 * units.watt / units.meter**2 / units.kelvin,
                  mat=LiquidMaterial(),
+                 t0=700*units.kelvin,
                  m_flow=None,
                  a_flow=None,
                  length_scale=None,
@@ -21,6 +22,8 @@ class ConvectiveModel(object):
         :type h0: double
         :param mat: material of the fluid
         :type mat: Material object
+        :param t0: the initial temperature of the liquid (coolant) (for wakao correlation)
+        :type t0: pint quantity with units.kelvin
         :param m_flow: mass flow rate
         :type m_flow: double
         :param a_flow: flow cross section surface area
@@ -32,9 +35,10 @@ class ConvectiveModel(object):
         :type model: string
         """
         self.h0 = h0
-        self.k = mat.k
+        self.mat = mat
         self.cp = mat.cp
         self.mu = mat.mu
+        self.t0 = t0
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale
@@ -54,7 +58,9 @@ class ConvectiveModel(object):
             raise ValueError(msg)
 
     def h(self, rho=0 * units.kg / units.meter**3,
-          mu=0 * units.pascal * units.second):
+          mu=0 * units.pascal * units.second,
+          temp=None,
+          timestep=None):
         """
         Returns the convective heat transfer coefficient
 
@@ -64,20 +70,37 @@ class ConvectiveModel(object):
         :type mu: float
         """
         return self.implemented[self.model](rho.to(units.kg / units.meter**3),
-                                            mu.to(units.pascal * units.second))
+                                            mu.to(units.pascal * units.second),
+                                            temp.to(units.kelvin),
+                                            timestep)
 
-    def constant(self, rho, mu):
+    def constant(self, rho, mu, temp, timestep):
         """
         Returns a constant heat transfer coefficient: h0
         :param rho: The density of the object
         :type rho: float
         :param mu: The dynamic viscosity of the object
         :type mu: float
-
         """
         return self.h0
 
-    def wakao(self, rho, mu):
+    # def wakao(self, rho, mu):
+    #     """
+    #     This function implements the Wakao correlation for convective heat
+    #     transfer coefficient
+    #     :param rho: The density of the object
+    #     :type rho: float
+    #     :param mu: The dynamic viscosity of the object
+    #     :type mu: float
+    #     """
+    #     u = self.m_flow / self.a_flow / rho
+    #     Re = rho * self.length_scale * u / self.mu
+    #     Pr = self.cp * self.mu / self.k
+    #     Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
+    #     ret = Nu * self.k / self.length_scale
+    #     return ret
+
+    def wakao(self,rho,mu,temp,timestep):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
@@ -85,10 +108,20 @@ class ConvectiveModel(object):
         :type rho: float
         :param mu: The dynamic viscosity of the object
         :type mu: float
+        :param temp: The temperature of the object
+        :type temp: float
+        :param timestep: The current timestep
+        :type timestep: int
         """
+
+        if timestep == 0:
+            k = self.mat.k(self.t0)
+        else:
+            k = self.mat.k(self.mat.km(temp))
+
         u = self.m_flow / self.a_flow / rho
-        Re = rho * self.length_scale * u / self.mu
-        Pr = self.cp * self.mu / self.k
+        Re = rho * self.length_scale * u / mu
+        Pr = self.cp * mu / k
         Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
-        ret = Nu * self.k / self.length_scale
+        ret = Nu * k / self.length_scale
         return ret

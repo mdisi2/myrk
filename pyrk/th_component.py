@@ -59,7 +59,6 @@ class THComponent(object):
         self.name = name
         self.vol = vol.to('meter**3')
         self.mat = mat
-        self.k = mat.k
         self.cp = mat.cp
         self.dm = mat.dm
         self.km = mat.km
