@@ -27,6 +27,8 @@ class LiquidMaterial(Material):
         :param mu: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
         :type mu: float, pint.unit.Quantity :math:`Pa.s`
         """
-        Material.__init__(self, name, km, cp, dm)
+        super().__init__(name, km, cp, dm)
         self.mu = mu.to('pascal*seconds')
         validation.validate_ge("mu", mu, 0 * units.pascal * units.seconds)
+
+        #just seeing if super() does anything different

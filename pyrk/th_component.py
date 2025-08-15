@@ -135,7 +135,11 @@ class THComponent(object):
         :return: the density of this component
         :rtype: float, in units of $kg/m^3$
         """
-        ret = self.dm.rho(self.temp(timestep))
+        if timestep == 0:
+            Temp = self.T[0]
+        else:
+            Temp = self.temp(timestep -1)
+        ret = self.dm.rho(Temp)
         return ret
     
     def thermal_conductivity(self, timestep):
@@ -147,8 +151,11 @@ class THComponent(object):
         :return: the thermal conductivity of this component
         :rtype: float in units, watts / kelvin / meter
         """
-
-        ret = self.km.k(self.temp(timestep))
+        if timestep == 0:
+            Temp = self.T[0]
+        else:
+            Temp = self.temp(timestep -1)
+        ret = self.km.k(Temp)
         return ret
 
     def update_temp(self, timestep, temp):

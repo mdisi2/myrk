@@ -63,7 +63,6 @@ class ConductivityModel(object):
         :type temp: float.
         """
 
-        Temp_c = temp.to(units.degC)
-        #T_celcius = (temp.m - 273.15) * units.kelvin
-        ret = self.a + self.b * Temp_c
+        T_celcius = (temp.m - 273.15) * units.kelvin
+        ret = self.a + self.b * T_celcius
         return ret 

@@ -6,6 +6,7 @@ from pyrk.conductivity_model import ConductivityModel
 from pyrk.materials.material import Material
 from pyrk.density_model import DensityModel
 from pyrk.materials.liquid_material import LiquidMaterial
+from pyrk.convective_model import ConvectiveModel
 
 #############################################
 #
@@ -89,6 +90,7 @@ a_refl = 2 * math.pi * core_outer_radius * core_height
 
 # TODO implement h(T) model
 h_mod = 4700 * units.watt / units.kelvin / units.meter**2
+
 # TODO placeholder
 h_refl = 600 * units.watt / units.kelvin / units.meter**2
 
@@ -158,8 +160,8 @@ Fuel_ = Material(name='fuel',
 Cool_ = LiquidMaterial(name='cool',
                        km = ConductivityModel(model='constant',
                                               a=1.0 * units.watt / (units.meter * units.kelvin)),
-                        cp= 2415.78 * units.joule / (units.kg * units.kelvin),
-                        dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
+                       cp = 2415.78 * units.joule / (units.kg * units.kelvin),
+                       dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /
                             (units.meter**3) / units.kelvin,
                             model="linear"))
