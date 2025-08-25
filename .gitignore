@@ -1,7 +1,7 @@
 # Ignore possible build & documentation
 docs/_build/
 build/
-pyrk.egg-info/
+pyrk.egg_info/
 dist/
 RELEASE\-VERSION
 pyrk/RELEASE\-VERSION
