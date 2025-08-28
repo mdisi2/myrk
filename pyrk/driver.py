@@ -255,6 +255,7 @@ def main(args, curr_dir):
                           rho_ext=infile.rho_ext,
                           plotdir=args.plotdir,
                           infile=args.infile,
+                          power_tot=infile.power_tot,
                           db=out_db)
     # TODO: think about weather to add n_ref to all input files, or put n_ref
     # in database files
@@ -263,7 +264,6 @@ def main(args, curr_dir):
     log_results(si)
     out_db.close_db()
     print(si.plotdir)
-    #plotter.plot(sol, si)
 
     Sim = H5Processor(infile=[args.outfile],
                     names=[''],

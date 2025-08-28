@@ -84,6 +84,7 @@ class SimInfoRow(tb.IsDescription):
     n_dg = tb.Int32Col()
     kappa = tb.Float64Col()
     plotdir = tb.StringCol(16)
+    power_tot = tb.Float64Col()
 
 
 class SimTimeseriesRow(tb.IsDescription):

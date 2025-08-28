@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import h5py
-import tables
-plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
+
+style_path = os.path.join(os.path.dirname(__file__), 'plotting.mplstyle')
+plt.style.use(style_path)
 
 # The th section reads two arrays, the component array
 # and the temp array. The 'component' array is a continous
@@ -20,9 +21,6 @@ plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
 # (int), group index (int), and the actual data. These group
 # indexes and corresponding data also loop for every timestep,
 # similar to the th treatment.
-
-# TODO fix power normalization issue
-# TODO impliment in driver main() function
 
 class H5Processor(object):
 
@@ -208,8 +206,12 @@ class H5Processor(object):
                 t = f['metadata']['sim_info']
                 t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
 
+
+                #finding total power
+                power_tot = f['metadata']['sim_info']['power_tot']
+
                 fig,ax1 = plt.subplots()
-                ax1.plot(t_arr, m['power'], label='Power (Normalized)', color="#332288")
+                ax1.plot(t_arr, power_tot * m['power'], label='Power', color="#332288")
                 ax1.set_xlabel('Time [s]')
                 ax1.set_ylabel('Power [watts]')
                 ax1.tick_params(axis='y', color="#332288")

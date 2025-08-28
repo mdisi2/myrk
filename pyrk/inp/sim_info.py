@@ -17,6 +17,7 @@ class SimInfo(object):
                  components=None,
                  iso="u235",
                  e="thermal",
+                 power_tot=None,
                  n_precursors=6,
                  n_decay=11,
                  n_fic=0,
@@ -37,6 +38,8 @@ class SimInfo(object):
         :type iso: only a few values are supported. see PrecursorData class
         :param e: spectrum ("fast", "thermal", etc.)
         :type e: string
+        :param power_tot: the total power of the simulation defined in the input file
+        :type power_tot: float or int
         :param n_precursors: number of delayed precursor groups
         :type n_precursors: int
         :param n_decay: number of decay groups
@@ -57,6 +60,7 @@ class SimInfo(object):
         self.components = components if components else {}
         self.iso = iso
         self.e = e
+        self.power_tot = power_tot
         self.n_pg = n_precursors + n_fic
         self.n_dg = n_decay
         self.rho_ext = self.init_rho_ext(rho_ext)
@@ -211,7 +215,8 @@ class SimInfo(object):
                'n_pg': self.n_pg,
                'n_dg': self.n_dg,
                'kappa': self.kappa,
-               'plotdir': self.plotdir}
+               'plotdir': self.plotdir,
+               'power_tot':float(self.power_tot.magnitude)}
         return rec
 
     def record(self):
