@@ -10,7 +10,7 @@ class Material(object):
 
     def __init__(self,
                  name=None,
-                 km=ConductivityModel(),
+                 k=ConductivityModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel()):
         """Initalizes a material
@@ -25,17 +25,17 @@ class Material(object):
         :type dm: DensityModel object
         """
         self.name = name
-        self.km = km
-        #self.k = k
         self.cp = cp.to('joule/kg/kelvin')
         validation.validate_ge(
             "cp", cp, 0 * units.joule / units.kg / units.kelvin)
         self.dm = dm
 
-        # if self.k is not None:
-        #     assert self.k.units == (units.watts / units.meter / units.kelvin) , "k must have units watts/meter/kelvin"
-        #     self.km = ConductivityModel(model='constant',
-        #                                 a=self.k)
+        if isinstance(k, ConductivityModel):
+            self.k = k
+        else:
+            assert k.units == (units.watts / units.meter / units.kelvin), "k must be watts/meter/kelvin"
+            self.k = ConductivityModel(model='constant', 
+                                       a=k)
 
     def rho(self, temp):
         """
@@ -49,7 +49,7 @@ class Material(object):
         ret = self.dm.rho(temp)
         return ret
 
-    def k(self, temp):
+    def thermal_conductivity(self, temp):
         """
         The conductivity (k) of of this material as a function of temperature
 
@@ -60,4 +60,4 @@ class Material(object):
         """
 
         ret = self.km.k(temp)
-        return ret 
+        return ret

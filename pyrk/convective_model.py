@@ -38,7 +38,7 @@ class ConvectiveModel(object):
         self.mat = mat
         self.cp = mat.cp
         self.mu = mat.mu
-        self.km = mat.km
+        self.k = mat.k
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale

@@ -61,7 +61,7 @@ class THComponent(object):
         self.mat = mat
         self.cp = mat.cp
         self.dm = mat.dm
-        self.km = mat.km
+        self.k = mat.k
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                          dtype=float), 'kelvin')
@@ -155,7 +155,7 @@ class THComponent(object):
             Temp = self.T[0]
         else:
             Temp = self.temp(timestep -1)
-        ret = self.km.k(Temp)
+        ret = self.k.k(Temp)
         return ret
 
     def update_temp(self, timestep, temp):

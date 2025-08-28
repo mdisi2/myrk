@@ -44,7 +44,7 @@ core_outer_radius = 1.25 * units.meter  #
 t0 = 0.00 * units.seconds
 
 # Timestep
-dt = 0.05 * units.seconds
+dt = 0.005 * units.seconds
 
 # Final Time
 tf = 5.0 * units.seconds
@@ -140,26 +140,17 @@ nsteps = 1000
 ### Material Initializations -- Core, Mod, Refl, graph_peb are all the same material - Graphite(name="pebgraphite")
 
 Fuel_ = Material(name='fuel',
-                km=ConductivityModel(a = 1.5 * 
+                k=ConductivityModel(a = 1.5 * 
                                     units.watt / (units.meter * units.kelvin),
                                     model='constant'),
                 cp = 300 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=10500.0 * units.kg / (units.meter**3),
                                   model="constant"))
 
-# Cool_Flibe = LiquidMaterial(name='cool',
-#                     km = ConductivityModel(model='linear',
-#                                             a=0.7662 * units.watt / (units.meter * units.kelvin),
-#                                             b=0.0005 * units.watt / units.kelvin / units.meter / units.kelvin),
-#                         cp= 2415.78 * units.joule / (units.kg * units.kelvin),
-#                         dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
-#                             b=-0.488 * units.kg /
-#                             (units.meter**3) / units.kelvin,
-#                             model="linear"))
-
 Cool_ = LiquidMaterial(name='cool',
-                       km = ConductivityModel(model='constant',
-                                              a=1.0 * units.watt / (units.meter * units.kelvin)),
+                       k = ConductivityModel(model='linear',
+                                              a=0.7662 * units.watt / (units.meter * units.kelvin),
+                                              b=0.0005 * units.watt / (units.meter * units.kelvin**2)),
                        cp = 2415.78 * units.joule / (units.kg * units.kelvin),
                        dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /
@@ -167,28 +158,28 @@ Cool_ = LiquidMaterial(name='cool',
                             model="linear"))
 
 Refl_ = Material(name='refl',
-                km = ConductivityModel(model='constant',
+                k = ConductivityModel(model='constant',
                                         a = 0.26 * units.watt / (units.meter * units.kelvin)),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Mod_ = Material(name='mod',
-                km = ConductivityModel(model='constant',
+                k = ConductivityModel(model='constant',
                                         a = 0.26 * units.watt / (units.meter * units.kelvin)),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Core_ = Material(name='core',
-                km = ConductivityModel(model='constant',
+                k = ConductivityModel(model='constant',
                                         a = 0.26 * units.watt / (units.meter * units.kelvin)),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Graph_Peb_ = Material(name='graph_peb',
-                km = ConductivityModel(model='constant',
+                k = ConductivityModel(model='constant',
                                         a = 0.26 * units.watt / (units.meter * units.kelvin)),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
