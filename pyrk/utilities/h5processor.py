@@ -6,22 +6,6 @@ import h5py
 style_path = os.path.join(os.path.dirname(__file__), 'plotting.mplstyle')
 plt.style.use(style_path)
 
-# The th section reads two arrays, the component array
-# and the temp array. The 'component' array is a continous
-# list of the component names looping every timestep. The 
-# temp array holds the temp for corresponding index of the
-# component, also looping every timestep. Meaning Comp[0] 
-# and Temp[0] refer to the first component's temperature
-# at the first timestep. If I have 5 components, then 
-# Comp[5] and Temp[5] refer to the same component at the 
-# second timestep.
-
-# The neutronics portion reads two tables, the omegas and 
-# zetas tables. The both tables hold 3  arrays, the timestep
-# (int), group index (int), and the actual data. These group
-# indexes and corresponding data also loop for every timestep,
-# similar to the th treatment.
-
 class H5Processor(object):
 
     """
@@ -124,7 +108,7 @@ class H5Processor(object):
                 plt.plot(time_arr[mask], data_dict[c], label=f"{self.names[i]}")
             plt.ylabel("Temperature [K]")
             plt.title(f"{c.capitalize()} Temperature")
-            path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}_comparison.png")
+            path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}.png")
             self.style(path)
         
         if self.multisim is True:
@@ -197,6 +181,8 @@ class H5Processor(object):
         """
         Treatment for the neutronics and power
         section of the database.
+
+        also plots 
         """
 
         for idx, infile in enumerate(self.infilelist):
@@ -231,23 +217,34 @@ class H5Processor(object):
                 self.style(filepath)
 
         if self.multisim is True:
-            data = []
-            for infile in self.infilelist:
-                with h5py.File(infile) as f:
-                    m = f['metadata']['sim_timeseries']
-                    t = f['metadata']['sim_info']
-                    data.append({'time_arr': np.linspace(t['t0'], t['tf'], len(m['power'])),
-                                'p_arr': m['power']})
+            self.plot_power_comparison()
+            self.plot_difference_rho()
 
-            plt.figure()
-            for idx, sim in enumerate(data):
-                plt.plot(sim['time_arr'], sim['p_arr'], label=f'{self.names[idx]}')
 
-            plt.title('Power Comparison')
-            plt.ylabel('Power [normalized]')
-            plt.legend()
-            filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
-            self.style(filepath)
+    
+    def plot_power_comparison(self):
+            
+        """Plots the power between simulation
+        on the same graph
+        """
+
+        data = []
+        for infile in self.infilelist:
+            with h5py.File(infile) as f:
+                m = f['metadata']['sim_timeseries']
+                t = f['metadata']['sim_info']
+                data.append({'time_arr': np.linspace(t['t0'], t['tf'], len(m['power'])),
+                            'p_arr': m['power']})
+
+        plt.figure()
+        for idx, sim in enumerate(data):
+            plt.plot(sim['time_arr'], sim['p_arr'], label=f'{self.names[idx]}')
+
+        plt.title('Power Comparison')
+        plt.ylabel('Power [normalized]')
+        plt.legend()
+        filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
+        self.style(filepath)
 
     def plot_zetas(self):
 
@@ -325,6 +322,59 @@ class H5Processor(object):
                 plt.legend()
                 path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'omegas_{self.names[x]}.png')
                 self.style(path)
+
+
+    def plot_difference_rho(self):
+        
+        """Plots the absolute difference between power for 
+        multiple simulations.
+        
+        If the number of sims is greater than 2, 
+        the differences will be pairwise 
+
+        Ex:                 (1 & 2) , (1 & 3) , (2 & 3)
+
+        :param infilelist: a list of H5 file paths
+        :param plotdir: the output directory 
+        :param names: a list of the names corresponding to files
+        """
+
+        all_sims = []
+        time_arrays = []
+        os.makedirs(os.path.join(self.plotdir,'Neutronics','Power_Difference'), exist_ok=True)
+
+        for infile in self.infilelist:
+            with h5py.File(infile) as f:
+                power_tot = float(f['metadata']['sim_info']['power_tot'])
+                t = f['metadata']['sim_info']
+                rho = f['metadata']['sim_timeseries']['power'][:]
+                t_idx = f['metadata']['sim_timeseries']['t_idx'][:]
+                t_arr = np.linspace(t['t0'][()], t['tf'][()], len(t_idx))
+                data = power_tot * rho
+                all_sims.append(data)
+                time_arrays.append(t_arr)
+
+        plt.figure()
+        for i in range(len(all_sims)):
+            for j in range(i + 1, len(all_sims)):
+                if len(time_arrays[i]) != len(time_arrays[j]):
+                    print(f"Power has different lengths in simulations {i} and {j}")
+                    break
+
+                diff = np.abs(np.array(all_sims[i]) - np.array(all_sims[j]))
+                plt.plot(time_arrays[i], diff, label=f"{self.names[i]} - {self.names[j]}")
+
+            plt.ylabel(r"$\Delta$ Power [watts]")
+            plt.title(f"Power Differences | {self.names[i]} - {self.names[j]}")
+            plt.legend()
+            plt.grid(True)
+            plt.xlabel(r'Time $[s]$')
+            plt.tight_layout()
+            path = os.path.join(self.plotdir, 'Neutronics', f'Power_Difference', f"power_difference_{self.names[i]} - {self.names[j]}.png")
+            plt.savefig(path, dpi=300, format='png')
+            plt.close()
+            print(f"Saved {path}")
+
 
     def h5plot(self):
 
