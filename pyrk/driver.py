@@ -263,14 +263,12 @@ def main(args, curr_dir):
     log_results(si)
     out_db.close_db()
     print(si.plotdir)
-    #plotter.plot(sol, si)
+    pyrklog.critical("\nSimulation succeeded.\n")
 
     Sim = H5Processor(infile=[args.outfile],
-                    names=[''],
-                    plotdir=args.plotdir)
+                      names=[''],
+                      plotdir=args.plotdir)
     Sim.h5plot()
-
-    pyrklog.critical("\nSimulation succeeded.\n")
     
 
 """Run it as a script"""

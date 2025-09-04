@@ -21,9 +21,6 @@ plt.style.use(os.path.join(os.path.dirname(__file__), 'plotting.mplstyle'))
 # indexes and corresponding data also loop for every timestep,
 # similar to the th treatment.
 
-# TODO fix power normalization issue
-# TODO impliment in driver main() function
-
 class H5Processor(object):
 
     """
@@ -38,6 +35,9 @@ class H5Processor(object):
     :param plotdir: Directory of output files
     :type plotdir: os path
     """
+
+# TODO - take advantage of the class system, like store arrays used multiple times in the class itself, like the timestep index array as a self.t_idx or something. 
+
 
     def __init__(self,
                  infile = None,
@@ -67,7 +67,7 @@ class H5Processor(object):
         if self.plotdir is not None:
             os.makedirs(self.plotdir, exist_ok=True)
 
-        if len(self.infilelist) > 1:
+        if len(self.infilelist) >= 2:
             self.multisim = True
         else:
             self.multisim = False
@@ -126,7 +126,7 @@ class H5Processor(object):
                 plt.plot(time_arr[mask], data_dict[c], label=f"{self.names[i]}")
             plt.ylabel("Temperature [K]")
             plt.title(f"{c.capitalize()} Temperature")
-            path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}_comparison.png")
+            path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}.png")
             self.style(path)
         
         if self.multisim is True:
@@ -208,8 +208,10 @@ class H5Processor(object):
                 t = f['metadata']['sim_info']
                 t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
 
+                pt = self.power_total(infile)
+
                 fig,ax1 = plt.subplots()
-                ax1.plot(t_arr, m['power'], label='Power (Normalized)', color="#332288")
+                ax1.plot(t_arr, pt * m['power'], label='Power', color="#332288")
                 ax1.set_xlabel('Time [s]')
                 ax1.set_ylabel('Power [watts]')
                 ax1.tick_params(axis='y', color="#332288")
@@ -242,7 +244,7 @@ class H5Processor(object):
                 plt.plot(sim['time_arr'], sim['p_arr'], label=f'{self.names[idx]}')
 
             plt.title('Power Comparison')
-            plt.ylabel('Power [normalized]')
+            plt.ylabel('Power [Watts]')
             plt.legend()
             filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
             self.style(filepath)
@@ -323,6 +325,22 @@ class H5Processor(object):
                 plt.legend()
                 path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'omegas_{self.names[x]}.png')
                 self.style(path)
+
+
+    def power_total(self, infile):
+        """Finds and returns the total power of the simulation.
+
+        Defaults to 1.0 if it can't be found.
+        """
+        with h5py.File(infile) as f:
+            th_component = f['th']['th_params']
+            for component in th_component:
+                comp_name = component[2].decode('utf-8')
+                if comp_name == 'fuel':
+                    power_tot = component[7]
+                    return float(power_tot)
+        return 1.0
+
 
     def h5plot(self):
 
