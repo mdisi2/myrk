@@ -36,7 +36,20 @@ class H5Processor(object):
     :type plotdir: os path
     """
 
-# TODO - take advantage of the class system, like store arrays used multiple times in the class itself, like the timestep index array as a self.t_idx or something. 
+# TODO: take advantage of the class system:
+#       - store arrays used multiple times in the class itself
+#           -like the timestep index array as a self.t_idx
+
+# with h5py.File(infile) as f
+# self.sim_info = f['metadata']['sim_info']
+# self.t0 = sim_info['t0']
+# self.tf = sim_info['tf']
+# self.nsteps 
+# self.t_idx = np.linspace(self.t0,self.tf,"lenght of temp array")
+# self.comp_names = np.unique(f['th']['th_timeseries']['component'][:])
+
+
+# ^^^^^^^^^^^^^^^^^^ Like this
 
 
     def __init__(self,
@@ -237,11 +250,10 @@ class H5Processor(object):
             self.plot_difference_rho()
 
 
-            plt.title('Power Comparison')
-            plt.ylabel('Power [Watts]')
-            plt.legend()
-            filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
-            self.style(filepath)
+            # plt.title('Power Comparison')
+            # plt.ylabel('Power [Watts]')
+            # filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
+            # self.style(filepath)
     
     def plot_power_comparison(self):
             
@@ -264,7 +276,6 @@ class H5Processor(object):
 
         plt.title('Power Comparison')
         plt.ylabel('Power [normalized]')
-        plt.legend()
         filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
         self.style(filepath)
 
@@ -303,7 +314,6 @@ class H5Processor(object):
                 plt.ylabel(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
                 plt.xlabel("Time [s]")
                 plt.title(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
-                plt.legend()
                 path = os.path.join(self.plotdir, 'Neutronics', 'Zetas', f'zetas_{self.names[x]}.png')
                 self.style(path)
 
@@ -341,7 +351,6 @@ class H5Processor(object):
                     plt.plot(t_sec[mask], odata[mask], label=f'Group {group}')
                 plt.ylabel(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
                 plt.title(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
-                plt.legend()
                 path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'omegas_{self.names[x]}.png')
                 self.style(path)
 
@@ -420,7 +429,8 @@ class H5Processor(object):
         self.plot_omegas()
 
     def style(self, path):
-        plt.legend()
+        if self.multisim is True:
+            plt.legend()
         plt.grid(True)
         plt.xlabel(r'Time $[s]$')
         plt.tight_layout()
