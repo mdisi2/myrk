@@ -37,7 +37,7 @@ class ConductivityModel(object):
                 msg += m
             raise ValueError(msg)
         
-    def k(self, temp=0 * units.kelvin):
+    def thermal_conductivity(self, temp=0 * units.kelvin):
         """
         Returns the thermal conductivity based on the temperature.
 

@@ -61,7 +61,7 @@ class THComponent(object):
         self.mat = mat
         self.cp = mat.cp
         self.dm = mat.dm
-        self.k = mat.k
+        self.km = mat.k
         self.timer = timer
         self.T = units.Quantity(np.zeros(shape=(timer.timesteps(),),
                                          dtype=float), 'kelvin')
@@ -142,7 +142,7 @@ class THComponent(object):
         ret = self.dm.rho(Temp)
         return ret
     
-    def thermal_conductivity(self, timestep):
+    def k(self, timestep):
         """The thermal conductivity (k) of this
         componenent's materials
 
@@ -155,7 +155,7 @@ class THComponent(object):
             Temp = self.T[0]
         else:
             Temp = self.temp(timestep -1)
-        ret = self.k.k(Temp)
+        ret = self.km.thermal_conductivity(Temp)
         return ret
 
     def update_temp(self, timestep, temp):
@@ -318,7 +318,7 @@ class THComponent(object):
                'component': self.name,
                'temp': self.temp(timestep).magnitude,
                'density': self.rho(timestep).magnitude,
-               'k': self.thermal_conductivity(timestep).magnitude,
+               'k': self.k(timestep).magnitude,
                'cp': self.cp.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
                'heatgen': self.heatgen,

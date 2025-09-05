@@ -14,6 +14,8 @@ from pyrk.convective_model import ConvectiveModel
 #
 #############################################
 
+### RUn this on main
+
 # Thermal hydraulic params
 # Temperature feedbacks of reactivity
 alpha_f = -3.8 * units.pcm / units.kelvin
@@ -131,7 +133,7 @@ feedback = True
 from pyrk.reactivity_insertion import StepReactivityInsertion
 rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
-                                  rho_final=0.005 * units.delta_k)
+                                  rho_final=0.000 * units.delta_k)
 
 # maximum number of internal steps that the ode solver will take
 nsteps = 1000
@@ -140,17 +142,13 @@ nsteps = 1000
 ### Material Initializations -- Core, Mod, Refl, graph_peb are all the same material - Graphite(name="pebgraphite")
 
 Fuel_ = Material(name='fuel',
-                k=ConductivityModel(a = 1.5 * 
-                                    units.watt / (units.meter * units.kelvin),
-                                    model='constant'),
+                k = 1.5 * units.watt / (units.meter * units.kelvin),
                 cp = 300 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=10500.0 * units.kg / (units.meter**3),
                                   model="constant"))
 
 Cool_ = LiquidMaterial(name='cool',
-                       k = ConductivityModel(model='linear',
-                                              a=0.7662 * units.watt / (units.meter * units.kelvin),
-                                              b=0.0005 * units.watt / (units.meter * units.kelvin**2)),
+                       k = 1 * units.watt / (units.meter * units.kelvin),
                        cp = 2415.78 * units.joule / (units.kg * units.kelvin),
                        dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /
@@ -158,29 +156,25 @@ Cool_ = LiquidMaterial(name='cool',
                             model="linear"))
 
 Refl_ = Material(name='refl',
-                k = ConductivityModel(model='constant',
-                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                k = 0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Mod_ = Material(name='mod',
-                k = ConductivityModel(model='constant',
-                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                k = 0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Core_ = Material(name='core',
-                k = ConductivityModel(model='constant',
-                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                k = 0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
 Graph_Peb_ = Material(name='graph_peb',
-                k = ConductivityModel(model='constant',
-                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                k = 0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))

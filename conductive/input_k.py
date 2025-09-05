@@ -1,16 +1,20 @@
 from pyrk.utilities.ur import units
 from pyrk import th_component as th
 import math
-from pyrk.materials.flibe import Flibe
-from pyrk.materials.graphite import Graphite
-from pyrk.materials.kernel import Kernel
 from pyrk.timer import Timer
+from pyrk.conductivity_model import ConductivityModel
+from pyrk.materials.material import Material
+from pyrk.density_model import DensityModel
+from pyrk.materials.liquid_material import LiquidMaterial
+from pyrk.convective_model import ConvectiveModel
 
 #############################################
 #
 # User Workspace
 #
 #############################################
+
+### This is the File for the conductivity model test script. it will be identical to the default.py script exctept that script will still be using k as a float and will be run on the main build for debuging purposes agianst this file. 
 
 # Thermal hydraulic params
 # Temperature feedbacks of reactivity
@@ -42,7 +46,7 @@ core_outer_radius = 1.25 * units.meter  #
 t0 = 0.00 * units.seconds
 
 # Timestep
-dt = 0.05 * units.seconds
+dt = 0.005 * units.seconds
 
 # Final Time
 tf = 5.0 * units.seconds
@@ -88,6 +92,7 @@ a_refl = 2 * math.pi * core_outer_radius * core_height
 
 # TODO implement h(T) model
 h_mod = 4700 * units.watt / units.kelvin / units.meter**2
+
 # TODO placeholder
 h_refl = 600 * units.watt / units.kelvin / units.meter**2
 
@@ -128,14 +133,71 @@ feedback = True
 from pyrk.reactivity_insertion import StepReactivityInsertion
 rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
-                                  rho_final=0.005 * units.delta_k)
+                                  rho_final=0.000 * units.delta_k)
 
 # maximum number of internal steps that the ode solver will take
 nsteps = 1000
 
 
+### Material Initializations -- Core, Mod, Refl, graph_peb are all the same material - Graphite(name="pebgraphite")
+
+Fuel_ = Material(name='fuel',
+                k=ConductivityModel(a = 1.5 * 
+                                    units.watt / (units.meter * units.kelvin),
+                                    model='constant'),
+                cp = 300 * units.joule / (units.kg * units.kelvin),
+                dm = DensityModel(a=10500.0 * units.kg / (units.meter**3),
+                                  model="constant"))
+
+
+# Testing Constant First to be consistant with input_m.py
+# Cool_ = LiquidMaterial(name='cool' , 
+                    #    k = ConductivityModel(model='linear',
+                    #                           a=0.7662 * units.watt / (units.meter * units.kelvin),
+                    #                           b=0.0005 * units.watt / (units.meter * units.kelvin**2)),
+
+
+Cool_ = LiquidMaterial(name='cool',
+                        k = ConductivityModel(model='constant',
+                                              a=1 * units.watt / (units.meter * units.kelvin)),
+                       cp = 2415.78 * units.joule / (units.kg * units.kelvin),
+                       dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
+                            b=-0.488 * units.kg /
+                            (units.meter**3) / units.kelvin,
+                            model="linear"))
+
+Refl_ = Material(name='refl',
+                k = ConductivityModel(model='constant',
+                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                cp = 1650.0 * units.joule / (units.kg * units.kelvin),
+                dm = DensityModel(a=1740. * units.kg / (units.meter**3),
+                            model="constant"))
+
+Mod_ = Material(name='mod',
+                k = ConductivityModel(model='constant',
+                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                cp = 1650.0 * units.joule / (units.kg * units.kelvin),
+                dm = DensityModel(a=1740. * units.kg / (units.meter**3),
+                            model="constant"))
+
+Core_ = Material(name='core',
+                k = ConductivityModel(model='constant',
+                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                cp = 1650.0 * units.joule / (units.kg * units.kelvin),
+                dm = DensityModel(a=1740. * units.kg / (units.meter**3),
+                            model="constant"))
+
+Graph_Peb_ = Material(name='graph_peb',
+                k = ConductivityModel(model='constant',
+                                        a = 0.26 * units.watt / (units.meter * units.kelvin)),
+                cp = 1650.0 * units.joule / (units.kg * units.kelvin),
+                dm = DensityModel(a=1740. * units.kg / (units.meter**3),
+                            model="constant"))
+
+
+
 fuel = th.THComponent(name="fuel",
-                      mat=Kernel(name="fuelkernel"),
+                      mat=Fuel_,
                       vol=vol_fuel,
                       T0=t_fuel,
                       alpha_temp=alpha_f,
@@ -144,35 +206,35 @@ fuel = th.THComponent(name="fuel",
                       power_tot=power_tot)
 
 cool = th.THComponent(name="cool",
-                      mat=Flibe(name="flibe"),
+                      mat=Cool_,
                       vol=vol_cool,
                       T0=t_cool,
                       alpha_temp=alpha_c,
                       timer=ti)
 
 refl = th.THComponent(name="refl",
-                      mat=Graphite(name="reflgraphite"),
+                      mat=Refl_,
                       vol=vol_refl,
                       T0=t_refl,
                       alpha_temp=alpha_r,
                       timer=ti)
 
 mod = th.THComponent(name="mod",
-                     mat=Graphite(name="pebgraphite"),
+                     mat=Mod_,
                      vol=vol_mod,
                      T0=t_mod,
                      alpha_temp=alpha_mod,
                      timer=ti)
 
 core = th.THComponent(name="core",
-                      mat=Graphite(name="pebgraphite"),
+                      mat=Core_,
                       vol=vol_core,
                       T0=t_core,
                       alpha_temp=alpha_core,
                       timer=ti)
 
 graph_peb = th.THComponent(name="graph_peb",
-                           mat=Graphite(name="pebgraphite"),
+                           mat=Graph_Peb_,
                            vol=vol_mod,
                            T0=t_graph_peb,
                            alpha_temp=alpha_graph_peb,
