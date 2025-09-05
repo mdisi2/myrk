@@ -38,7 +38,8 @@ class ConvectiveModel(object):
         self.mat = mat
         self.cp = mat.cp
         self.mu = mat.mu
-        self.k = mat.k
+        self.km = mat.k
+        self.dm = mat.dm
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale
@@ -82,35 +83,44 @@ class ConvectiveModel(object):
         """
         return self.h0
 
-    # def wakao(self, rho, mu):
-    #     """
-    #     This function implements the Wakao correlation for convective heat
-    #     transfer coefficient
-    #     :param rho: The density of the object
-    #     :type rho: float
-    #     :param mu: The dynamic viscosity of the object
-    #     :type mu: float
-    #     """
-    #     u = self.m_flow / self.a_flow / rho
-    #     Re = rho * self.length_scale * u / self.mu
-    #     Pr = self.cp * self.mu / self.k
-    #     Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
-    #     ret = Nu * self.k / self.length_scale
-    #     return ret
-
     def wakao(self,rho,mu,k):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
-        :param rho: The density of the object
+
+        :param rho: The density of the coolant
         :type rho: float
-        :param mu: The dynamic viscosity of the object
+        :param mu: The dynamic viscosity of the coolant
         :type mu: float
-        :param temp: The temperature of the object
-        :type temp: float
-        :param timestep: The current timestep
-        :type timestep: int
+        :param k: The thermal conductivity of the coolant
+        :type k: float
         """
+
+        u = self.m_flow / self.a_flow / rho
+        Re = rho * self.length_scale * u / mu
+        Pr = self.cp * mu / k
+        Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
+        ret = Nu * k / self.length_scale
+        return ret
+    
+
+    def wakao_timestep(self,temp):
+        """
+        This function implements the Wakao correlation for convective heat
+        transfer coefficient
+
+        :param temp: The temperature of the coolant
+        :temp type: float or pint quantity units.kevlin
+        """
+
+        if not hasattr(temp,'units'):
+            temp * units.kelvin
+        else:
+            temp.to("kelvin")
+
+        rho = self.dm.rho(temp)
+        mu = self.mu
+        k = self.km.thermal_conductivity(temp)
 
         u = self.m_flow / self.a_flow / rho
         Re = rho * self.length_scale * u / mu

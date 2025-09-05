@@ -123,9 +123,14 @@ class THComponent(object):
         :return: the temperature of the component at the chosen timestep
         :rtype: float, in units of kelvin
         """
-        validation.validate_ge("timestep", timestep, 0)
-        validation.validate_le("timestep", timestep, self.timer.timesteps())
-        return self.T[timestep]
+
+        if timestep == 0:
+            return self.T0
+        
+        else:
+            validation.validate_ge("timestep", timestep, 0)
+            validation.validate_le("timestep", timestep, self.timer.timesteps())
+            return self.T[timestep]
 
     def rho(self, timestep):
         """The density of this component's materials

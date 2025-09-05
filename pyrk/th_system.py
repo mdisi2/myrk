@@ -51,10 +51,6 @@ class THSystem(object):
             return to_ret * units.kelvin / units.second
         else:
             cap = (component.rho(t_idx).magnitude * component.cp.magnitude)
-            # Print coolant info at every timestep if this is the coolant component
-            if component.name.lower() == "cool":
-                prev_temp = component.T[t_idx - 1].magnitude if t_idx > 0 else None
-                print(f"timestep={t_idx}, temp={prev_temp}, rho={component.rho(t_idx)}, cp={component.cp}, k={component.k(t_idx)}, name={component.name}")
             if component.sph and component.ri.magnitude == 0.0:
                 Qcent = self.BC_center(component, t_idx)
                 to_ret -= Qcent / cap
@@ -174,7 +170,7 @@ class THSystem(object):
         # k in this context needs to take temp since its not taking timestep
         # Additionally, its the conductivity of the body not env
         k = component.mat.thermal_conductivity(t_b * units.kelvin).magnitude
-        dr = component.ri.magnitude - component.ro.magnitude
+        dr = (component.ro - component.ri).magnitude #changed this from ri - ro
         T_R = (-h.magnitude / k * t_env + t_b / dr) / \
             (1 / dr - h.magnitude / k)
         to_ret = 1 / r_b * k * (r_b * t_b - R.magnitude * T_R) / dr**2
