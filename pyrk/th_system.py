@@ -69,20 +69,25 @@ class THSystem(object):
             for interface, d in six.iteritems(component.cond):
                 env = self.comp_from_name(interface)
                 if component.sph:
-                    Qcond = self.conductionFVM(component, env, t_idx)
+                    Qcond = self.conductionFVM(component=component, 
+                                               env= env, 
+                                               t_idx = t_idx)
                 else:
-                    Qcond = self.conduction_slab(component, env, t_idx,
+                    Qcond = self.conduction_slab(component = component,
+                                                env = env,
+                                                t_idx = t_idx,
                                                  L=d["L"],
                                                  A=d["area"])
                 to_ret -= Qcond / cap
             for interface, d in six.iteritems(component.conv):
                 env = self.comp_from_name(interface)
                 if isinstance(env, THSuperComponent):
-                    Tr = env.compute_tr(component.T[t_idx].magnitude,
-                                        env.sub_comp[-2].T[t_idx].magnitude,
+                    Tr = env.compute_tr(t_env = component.T[t_idx].magnitude,
+                                        t_innercomp= env.sub_comp[-2].T[t_idx].magnitude,
                                         h=d['h'].h(rho =component.rho(t_idx),
                                                    mu = component.mat.mu,
-                                                   k = component.k(t_idx)))
+                                                   k = component.k(t_idx)),
+                                        k=component.k(t_idx).magnitude)
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(rho = component.rho(t_idx),
@@ -189,8 +194,7 @@ class THSystem(object):
         return (power * component.power_tot.magnitude *
                 (1 - self.kappa) + sum(omegas)) / component.vol.magnitude
 
-    def conductionFVM(self, component, env, t_idx, L=0.0 * units.meter,
-                       A=0.0 * units.meter**2):
+    def conductionFVM(self, component, env, t_idx):
         """
         compute volumetric conductive heat transfer by conduction(watts/m3)
 
@@ -213,8 +217,7 @@ class THSystem(object):
         k_c = component.k(t_idx).magnitude
         return k_c / r_b * (r_b * T_b - r_env * T_env) / (dr**2)
 
-    def conduction_slab(self, component, env, t_idx, L,
-                        A):
+    def conduction_slab(self, component, env, t_idx, L, A):
         """
         compute volumetric heat transfer by conduction(watts/m3)
 
