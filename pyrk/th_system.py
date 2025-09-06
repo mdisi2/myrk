@@ -65,7 +65,9 @@ class THSystem(object):
                                             R=d["R"]))
                 to_ret -= QconvBC / cap
             if component.heatgen:
-                to_ret += self.heatgen(component, power, omegas) / cap
+                to_ret += self.heatgen(component=component,
+                                        power=power,
+                                        omegas=omegas) / cap
             for interface, d in six.iteritems(component.cond):
                 env = self.comp_from_name(interface)
                 if component.sph:
@@ -128,8 +130,8 @@ class THSystem(object):
                            env.T[t_idx].magnitude)
                 to_ret -= Qconv / cap / component.vol.magnitude
             for name, d in six.iteritems(component.adv):
-                Qadv = self.advection(component,
-                                      t_idx,
+                Qadv = self.advection(component=component,
+                                      t_idx=t_idx,
                                       t_in=d['t_in'].magnitude,
                                       m_flow=d['m_flow'],
                                       cp=d['cp'])
@@ -251,7 +253,7 @@ class THSystem(object):
         :param m_flow: mass flow rate though the control volume
         :type m_flow: float
         :param cp: specific heat capacity of the fluid
-        :type cp: float
+        :type cp: float 
         :return: dimemsionless quantity of Qadvective
         :rtype: float
         '''
