@@ -62,8 +62,7 @@ class THSystem(object):
                                             h=d['h'].h(rho=env.rho(t_idx),
                                                        mu=env.mat.mu,
                                                        k=env.k(t_idx),
-                                            R=d["R"]),
-                                            k=env.k(t_idx)) ### Chanded this
+                                            R=d["R"])) 
                 to_ret -= QconvBC / cap
             if component.heatgen:
                 to_ret += self.heatgen(component=component,
@@ -174,7 +173,7 @@ class THSystem(object):
         :rtype: float
         '''
         r_b = component.ro.magnitude
-        dr = (component.ro - component.ri).magnitude #changed this from ri - ro
+        dr = component.ri.magnitude - component.ro.magnitude
         k = component.km.thermal_conductivity(t_b)
         T_R = (-h.magnitude / k * t_env + t_b / dr) / \
             (1 / dr - h.magnitude / k)

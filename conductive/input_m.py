@@ -14,7 +14,7 @@ from pyrk.convective_model import ConvectiveModel
 #
 #############################################
 
-### RUn this on main
+### This is the File for the conductivity model test script. it will be identical to the default.py script exctept that script will still be using k as a float and will be run on the main build for debuging purposes agianst this file. 
 
 # Thermal hydraulic params
 # Temperature feedbacks of reactivity
@@ -139,15 +139,13 @@ rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
 nsteps = 1000
 
 
-### Material Initializations -- Core, Mod, Refl, graph_peb are all the same material - Graphite(name="pebgraphite")
-
 Fuel_ = Material(name='fuel',
-                k = 1.5 * units.watt / (units.meter * units.kelvin),
+                k=1.5 * units.watt / (units.meter * units.kelvin),
                 cp = 300 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=10500.0 * units.kg / (units.meter**3),
                                   model="constant"))
 
-Cool_ = LiquidMaterial(name='cool',
+Cool_ = LiquidMaterial(name='cool' , 
                        k = 1 * units.watt / (units.meter * units.kelvin),
                        cp = 2415.78 * units.joule / (units.kg * units.kelvin),
                        dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
@@ -162,7 +160,7 @@ Refl_ = Material(name='refl',
                             model="constant"))
 
 Mod_ = Material(name='mod',
-                k = 0.26 * units.watt / (units.meter * units.kelvin),
+                k  = 0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
@@ -174,7 +172,7 @@ Core_ = Material(name='core',
                             model="constant"))
 
 Graph_Peb_ = Material(name='graph_peb',
-                k = 0.26 * units.watt / (units.meter * units.kelvin),
+                k =  0.26 * units.watt / (units.meter * units.kelvin),
                 cp = 1650.0 * units.joule / (units.kg * units.kelvin),
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))

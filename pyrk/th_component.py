@@ -214,8 +214,7 @@ class THComponent(object):
             h = ConvectiveModel(h0=h)
         self.conv[env] = {
             "h": h,
-            "area": area ,
-            "k" : self.km
+            "area": area
         }
 
     def add_mass_trans(self, env, H, u):
@@ -371,7 +370,7 @@ class THSuperComponent(THComponent):
         self.add_conduction_in_mesh()
         self.alpha_temp = 0.0 * units.delta_k / units.kelvin
 
-    def compute_tr(self, t_env, t_innercomp, h, k):
+    def compute_tr(self, t_env, t_innercomp, h):
         '''compute temperature at r=R for the sphere from the temperature at r=R-dr
         and the temperature of the env/fluid/coolant
 
@@ -386,7 +385,6 @@ class THSuperComponent(THComponent):
         :type k: float
         '''
         for envname, d in six.iteritems(self.conv):
-            # h = self.conv[envname]["h"].h(env.rho(t_env)).magnitude
             dr = self.conv[envname]["dr"].magnitude
             k = self.km.thermal_conductivity(t_innercomp)
         return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)

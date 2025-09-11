@@ -10,7 +10,6 @@ class ConvectiveModel(object):
     def __init__(self,
                  h0=0 * units.watt / units.meter**2 / units.kelvin,
                  mat=LiquidMaterial(),
-                 t0=930*units.kelvin,
                  m_flow=None,
                  a_flow=None,
                  length_scale=None,
@@ -59,7 +58,7 @@ class ConvectiveModel(object):
             raise ValueError(msg)
 
     def h(self, rho=0 * units.kg / units.meter**3,
-          mu=0 * units.pascal * units.second,
+          mu= 0 * units.pascal * units.second,
           k = 0 * units.watt / units.meter / units.kelvin):
         """
         Returns the convective heat transfer coefficient
@@ -83,28 +82,28 @@ class ConvectiveModel(object):
         """
         return self.h0
 
-    def wakao(self,rho,mu,k):
-        """
-        This function implements the Wakao correlation for convective heat
-        transfer coefficient
+    # def wakao(self,rho,mu,k):
+    #     """
+    #     This function implements the Wakao correlation for convective heat
+    #     transfer coefficient
 
-        :param rho: The density of the coolant
-        :type rho: float
-        :param mu: The dynamic viscosity of the coolant
-        :type mu: float
-        :param k: The thermal conductivity of the coolant
-        :type k: float
-        """
+    #     :param rho: The density of the coolant
+    #     :type rho: float
+    #     :param mu: The dynamic viscosity of the coolant
+    #     :type mu: float
+    #     :param k: The thermal conductivity of the coolant
+    #     :type k: float
+    #     """
 
-        u = self.m_flow / self.a_flow / rho
-        Re = rho * self.length_scale * u / mu
-        Pr = self.cp * mu / k
-        Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
-        ret = Nu * k / self.length_scale
-        return ret
+    #     u = self.m_flow / self.a_flow / rho
+    #     Re = rho * self.length_scale * u / mu
+    #     Pr = self.cp * mu / k
+    #     Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
+    #     ret = Nu * k / self.length_scale
+    #     return ret
     
 
-    def wakao_temp(self,temp):
+    def wakao(self,temp):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
