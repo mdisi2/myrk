@@ -104,7 +104,7 @@ class ConvectiveModel(object):
         return ret
     
 
-    def wakao_timestep(self,temp):
+    def wakao_temp(self,temp):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient

@@ -62,7 +62,8 @@ class THSystem(object):
                                             h=d['h'].h(rho=env.rho(t_idx),
                                                        mu=env.mat.mu,
                                                        k=env.k(t_idx),
-                                            R=d["R"]))
+                                            R=d["R"]),
+                                            k=env.k(t_idx)) ### Chanded this
                 to_ret -= QconvBC / cap
             if component.heatgen:
                 to_ret += self.heatgen(component=component,
@@ -88,8 +89,7 @@ class THSystem(object):
                                         t_innercomp= env.sub_comp[-2].T[t_idx].magnitude,
                                         h=d['h'].h(rho =component.rho(t_idx),
                                                    mu = component.mat.mu,
-                                                   k = component.k(t_idx)),
-                                        k=component.k(t_idx).magnitude)
+                                                   k = component.k(t_idx)))
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(rho = component.rho(t_idx),
@@ -174,10 +174,8 @@ class THSystem(object):
         :rtype: float
         '''
         r_b = component.ro.magnitude
-        # k in this context needs to take temp since its not taking timestep
-        # Additionally, its the conductivity of the body not env
-        k = component.mat.thermal_conductivity(t_b * units.kelvin).magnitude
         dr = (component.ro - component.ri).magnitude #changed this from ri - ro
+        k = component.km.thermal_conductivity(t_b)
         T_R = (-h.magnitude / k * t_env + t_b / dr) / \
             (1 / dr - h.magnitude / k)
         to_ret = 1 / r_b * k * (r_b * t_b - R.magnitude * T_R) / dr**2

@@ -150,16 +150,10 @@ Fuel_ = Material(name='fuel',
                                   model="constant"))
 
 
-# Testing Constant First to be consistant with input_m.py
-# Cool_ = LiquidMaterial(name='cool' , 
-                    #    k = ConductivityModel(model='linear',
-                    #                           a=0.7662 * units.watt / (units.meter * units.kelvin),
-                    #                           b=0.0005 * units.watt / (units.meter * units.kelvin**2)),
-
-
-Cool_ = LiquidMaterial(name='cool',
-                        k = ConductivityModel(model='constant',
-                                              a=1 * units.watt / (units.meter * units.kelvin)),
+Cool_ = LiquidMaterial(name='cool' , 
+                       k = ConductivityModel(model='linear',
+                                              a=0.7662 * units.watt / (units.meter * units.kelvin),
+                                              b=0.0005 * units.watt / (units.meter * units.kelvin**2)),
                        cp = 2415.78 * units.joule / (units.kg * units.kelvin),
                        dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /

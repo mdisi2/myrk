@@ -214,7 +214,8 @@ class THComponent(object):
             h = ConvectiveModel(h0=h)
         self.conv[env] = {
             "h": h,
-            "area": area
+            "area": area ,
+            "k" : self.km
         }
 
     def add_mass_trans(self, env, H, u):
@@ -387,12 +388,13 @@ class THSuperComponent(THComponent):
         for envname, d in six.iteritems(self.conv):
             # h = self.conv[envname]["h"].h(env.rho(t_env)).magnitude
             dr = self.conv[envname]["dr"].magnitude
+            k = self.km.thermal_conductivity(t_innercomp)
         return (-h / k * t_env + t_innercomp / dr) / (1 / dr - h / k)
 
     def add_component(self, a_component):
         self.sub_comp.append(a_component)
 
-    def add_conv_bc(self, envname, h, k):
+    def add_conv_bc(self, envname, h):
         '''add convective boundary condition to the supercomponent
 
         :param envname: the name of the component that self tranfer heat with
@@ -407,7 +409,6 @@ class THSuperComponent(THComponent):
                                     h,
                                     (self.sub_comp)[-1].ro)
         self.conv[envname] = {'h': h,
-                              'k': k,
                               'dr': self.sub_comp[-1].ro - self.sub_comp[-1].ri
                              }
 
