@@ -53,7 +53,7 @@ class ConductivityModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
-        return 1 * units.watt / units.meter / units.kelvin
+        return self.a
     
     def linear(self, temp=0.0 * units.kelvin):
         """

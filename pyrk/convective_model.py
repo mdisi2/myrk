@@ -82,44 +82,18 @@ class ConvectiveModel(object):
         """
         return self.h0
 
-    # def wakao(self,rho,mu,k):
-    #     """
-    #     This function implements the Wakao correlation for convective heat
-    #     transfer coefficient
-
-    #     :param rho: The density of the coolant
-    #     :type rho: float
-    #     :param mu: The dynamic viscosity of the coolant
-    #     :type mu: float
-    #     :param k: The thermal conductivity of the coolant
-    #     :type k: float
-    #     """
-
-    #     u = self.m_flow / self.a_flow / rho
-    #     Re = rho * self.length_scale * u / mu
-    #     Pr = self.cp * mu / k
-    #     Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
-    #     ret = Nu * k / self.length_scale
-    #     return ret
-    
-
-    def wakao(self,temp):
+    def wakao(self,rho,mu,k):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
 
-        :param temp: The temperature of the coolant
-        :temp type: float or pint quantity units.kevlin
+        :param rho: The density of the coolant
+        :type rho: float
+        :param mu: The dynamic viscosity of the coolant
+        :type mu: float
+        :param k: The thermal conductivity of the coolant
+        :type k: float
         """
-
-        if not hasattr(temp,'units'):
-            temp * units.kelvin
-        else:
-            temp.to("kelvin")
-
-        rho = self.dm.rho(temp)
-        mu = self.mu
-        k = self.km.thermal_conductivity(temp)
 
         u = self.m_flow / self.a_flow / rho
         Re = rho * self.length_scale * u / mu
