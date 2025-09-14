@@ -95,8 +95,26 @@ class ConvectiveModel(object):
         :type k: float
         """
 
-        u = self.m_flow / self.a_flow / rho
-        Re = rho * self.length_scale * u / mu
+
+        if rho is None or rho == 0:
+            rho = self.mat.rho(self.T0)
+
+        if mu is None or mu == 0:
+            mu = self.mu
+
+        if k is None or k == 0:
+            k = self.mat.thermal_conductivity(self.T0)
+
+        u = self.m_flow / (self.a_flow * rho)
+        
+        try:
+            Re = rho * self.length_scale * u / mu
+        except ZeroDivisionError:
+            print('ZeroDivisionError detected!')
+            print('rho:', rho, 'mu:', mu, 'u:', u, 'length_scale:', self.length_scale)
+            raise
+
+
         Pr = self.cp * mu / k
         Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
         ret = Nu * k / self.length_scale

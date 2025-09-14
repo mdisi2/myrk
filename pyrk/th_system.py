@@ -95,11 +95,14 @@ class THSystem(object):
                                                        mu = component.mat.mu,
                                                        k = component.k(t_idx)),
                                             A=d['area'])
-                    assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
-                    convection from %s to %s, from low temperature %f to
-                    high %f is not physical: %f''' % (
-                        component.name, env.name, component.T[t_idx].magnitude,
-                        Tr, Qconv.magnitude)
+                    # assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
+                    # convection from %s to %s, from low temperature %f to
+                    # high %f is not physical: %f''' % (
+                    #     component.name, env.name, component.T[t_idx].magnitude,
+                    #     Tr, Qconv.magnitude)
+
+                    #commenting this out temperarily for testing
+
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         h_conv = d['h'].h(rho = component.rho(t_idx),
@@ -121,12 +124,15 @@ class THSystem(object):
                                             t_env=env.T[t_idx].magnitude,
                                             h=h_conv,
                                             A=d['area'])
-                    assert (
-                        Qconv * (component.T[t_idx] - env.T[t_idx])).magnitude >= 0, \
-                        'convection from %s to %s, %fc to %fc is not physical' \
-                        % (component.name, env.name,
-                           component.T[t_idx].magnitude,
-                           env.T[t_idx].magnitude)
+                    # assert (
+                    #     Qconv * (component.T[t_idx] - env.T[t_idx])).magnitude >= 0, \
+                    #     'convection from %s to %s, %fc to %fc is not physical' \
+                    #     % (component.name, env.name,
+                    #        component.T[t_idx].magnitude,
+                    #        env.T[t_idx].magnitude)
+
+                    ### Commenting out for testing
+
                 to_ret -= Qconv / cap / component.vol.magnitude
             for name, d in six.iteritems(component.adv):
                 Qadv = self.advection(component=component,

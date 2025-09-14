@@ -54,12 +54,12 @@ tf = 5.0 * units.seconds
 
 def area_sphere(r):
     assert(r >= 0 * units.meter)
-    return (4.0) * math.pi * pow(r.to('meter'), 2)
+    return (4.0) * math.pi * r**2
 
 
 def vol_sphere(r):
     assert(r >= 0 * units.meter)
-    return (4. / 3.) * math.pi * pow(r.to('meter'), 3)
+    return (4. / 3.) * math.pi * r**3
 
 
 # volumes
@@ -89,12 +89,6 @@ a_mod = area_sphere(r_pebble) * n_pebbles
 a_graph_peb = area_sphere(r_pebble) * n_graph_peb
 a_fuel = area_sphere(r_particle) * n_pebbles * n_particles_per_pebble
 a_refl = 2 * math.pi * core_outer_radius * core_height
-
-# TODO implement h(T) model
-h_mod = 4700 * units.watt / units.kelvin / units.meter**2
-
-# TODO placeholder
-h_refl = 600 * units.watt / units.kelvin / units.meter**2
 
 # modified alphas for mod
 vol_mod_tot = vol_mod + vol_graph_peb + vol_core
@@ -158,7 +152,8 @@ Cool_ = LiquidMaterial(name='cool' ,
                     dm= DensityModel(a=2413.2172 * units.kg / (units.meter**3),
                             b=-0.488 * units.kg /
                             (units.meter**3) / units.kelvin,
-                            model="linear"))
+                            model="linear"),
+                    mu=0.006*units.pascal * units.second)
 
 # Cool_ = LiquidMaterial(name='cool' , 
 #                     k = ConductivityModel(model='constant',
@@ -197,7 +192,22 @@ Graph_Peb_ = Material(name='graph_peb',
                 dm = DensityModel(a=1740. * units.kg / (units.meter**3),
                             model="constant"))
 
+### h(T) Wakao Correlation
 
+h_mod = ConvectiveModel(model='wakao',
+                        mat=Cool_,
+                        m_flow=976.0*0.3*units.kg / units.s,
+                        length_scale=r_pebble*2,
+                        a_flow=a_core)
+
+h_refl = ConvectiveModel(model='wakao',
+                        mat=Cool_,
+                        m_flow=976.0*0.3*units.kg / units.s,
+                        length_scale=r_pebble*2,
+                        a_flow=a_core)
+
+
+### THComponent Creation
 
 fuel = th.THComponent(name="fuel",
                       mat=Fuel_,
@@ -263,11 +273,20 @@ core.add_conduction('mod', area=a_core, L=25 * units.centimeter)
 graph_peb.add_convection('cool', h=h_mod, area=a_graph_peb)
 
 # The coolant convects accross the graphite pebbles
-cool.add_convection('graph_peb', h=h_mod, area=a_graph_peb)
+cool.add_convection('graph_peb', 
+                    h=ConvectiveModel(h0=4700 * units.watt / units.kelvin / units.meter**2,
+                    model='constant'),
+                    area=a_graph_peb)
 # The coolant convects accross the graphite pebbles
-cool.add_convection('mod', h=h_mod, area=a_mod)
+cool.add_convection('mod',
+                    h=ConvectiveModel(h0=4700 * units.watt / units.kelvin / units.meter**2,
+                    model='constant'),
+                    area=a_mod)
 # The coolant convects accross the reflector
-cool.add_convection('refl', h=h_refl, area=a_refl)
+cool.add_convection('refl',
+                    h=ConvectiveModel(h0=600 * units.watt / units.kelvin / units.meter**2,
+                    model='constant'),
+                    area=a_refl)
 
 # The reflector convects with the coolant
 refl.add_convection('cool', h=h_refl, area=a_refl)
