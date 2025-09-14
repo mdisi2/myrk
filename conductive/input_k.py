@@ -274,18 +274,15 @@ graph_peb.add_convection('cool', h=h_mod, area=a_graph_peb)
 
 # The coolant convects accross the graphite pebbles
 cool.add_convection('graph_peb', 
-                    h=ConvectiveModel(h0=4700 * units.watt / units.kelvin / units.meter**2,
-                    model='constant'),
+                    h=h_mod,
                     area=a_graph_peb)
 # The coolant convects accross the graphite pebbles
 cool.add_convection('mod',
-                    h=ConvectiveModel(h0=4700 * units.watt / units.kelvin / units.meter**2,
-                    model='constant'),
+                    h=h_mod,
                     area=a_mod)
 # The coolant convects accross the reflector
 cool.add_convection('refl',
-                    h=ConvectiveModel(h0=600 * units.watt / units.kelvin / units.meter**2,
-                    model='constant'),
+                    h=h_refl,
                     area=a_refl)
 
 # The reflector convects with the coolant

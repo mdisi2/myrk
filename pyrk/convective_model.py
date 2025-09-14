@@ -21,8 +21,6 @@ class ConvectiveModel(object):
         :type h0: double
         :param mat: material of the fluid
         :type mat: Material object
-        :param t0: the initial temperature of the liquid (coolant) (for wakao correlation)
-        :type t0: pint quantity with units.kelvin
         :param m_flow: mass flow rate
         :type m_flow: double
         :param a_flow: flow cross section surface area
@@ -95,25 +93,9 @@ class ConvectiveModel(object):
         :type k: float
         """
 
-
-        if rho is None or rho == 0:
-            rho = self.mat.rho(self.T0)
-
-        if mu is None or mu == 0:
-            mu = self.mu
-
-        if k is None or k == 0:
-            k = self.mat.thermal_conductivity(self.T0)
-
         u = self.m_flow / (self.a_flow * rho)
-        
-        try:
-            Re = rho * self.length_scale * u / mu
-        except ZeroDivisionError:
-            print('ZeroDivisionError detected!')
-            print('rho:', rho, 'mu:', mu, 'u:', u, 'length_scale:', self.length_scale)
-            raise
 
+        Re = rho * self.length_scale * u / mu
 
         Pr = self.cp * mu / k
         Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
