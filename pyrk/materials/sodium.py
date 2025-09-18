@@ -1,6 +1,7 @@
 from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.materials.liquid_material import LiquidMaterial
+from pyrk.conductivity_model import ConductivityModel
 
 
 class Sodium(LiquidMaterial):
@@ -35,7 +36,7 @@ class Sodium(LiquidMaterial):
 
         (but, note that wikipedia gives it as 142 W/m-K...)
         """
-        return 70.0 * units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a = 70.0 * units.watt / (units.meter * units.kelvin))
 
     def specific_heat_capacity(self):
         """Specific heat capacity of Sodium [J/kg/K]

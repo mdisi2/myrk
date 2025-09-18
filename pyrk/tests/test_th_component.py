@@ -6,15 +6,20 @@ from pyrk.utilities.ur import units
 from pyrk.timer import Timer
 from pyrk.materials.material import Material
 from pyrk import density_model
+from pyrk import conductivity_model
 
 name = "testname"
 vol = 20 * units.meter**3
-k = 10 * units.watt / units.meter / units.kelvin
+k = conductivity_model.ConductivityModel(a=1 * units.watt / units.meter /
+                                         units.kelvin,
+                                         b=1 * units.watt / units.meter /
+                                         units.kelvin / units.kelvin,
+                                         model='linear')
 cp = 10 * units.joule / units.kg / units.kelvin
 dm = density_model.DensityModel(a=0 * units.kg / units.meter**3,
                                 b=100 * units.kg / units.kelvin /
                                 pow(units.meter, 3),
-                                model='constant')
+                                model='linear')
 mat = Material(k=k, cp=cp, dm=dm)
 
 
@@ -33,8 +38,8 @@ tester_sph = th.THComponent(name=name, mat=mat, vol=vol, T0=T0, timer=ti,
 def test_constructor():
     assert tester.name == name
     assert tester.vol == vol
-    assert tester.k == k
-    assert tester.rho(0) == dm.rho()
+    assert tester.k(0) == k.thermal_conductivity(T0)
+    assert tester.rho(0) == dm.rho(T0)
     assert tester.T0 == T0
 
 

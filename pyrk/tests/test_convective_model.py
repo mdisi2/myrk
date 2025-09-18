@@ -24,5 +24,9 @@ def test_wakao_model():
     assert (h_wakao.mu ==
             2 * units.pascal * units.second)
     rho = 100 * units.kg / units.meter**3
-    assert (h_wakao.h(rho, 0 * units.pascal * units.second) ==
-            h_wakao.h(rho, 2 * units.pascal * units.second))
+    assert (h_wakao.h(rho=rho,
+                      mu=0 * units.pascal * units.second,
+                      k=mat.k.thermal_conductivity()) ==
+            h_wakao.h(rho=rho,
+                      mu=2 * units.pascal * units.second,
+                      k=mat.k.thermal_conductivity()))

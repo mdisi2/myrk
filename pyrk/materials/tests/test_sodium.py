@@ -16,6 +16,6 @@ def test_constructor():
     TODO: test density
     '''
     assert tester.name == name
-    assert tester.k == k_Na
+    assert tester.k.thermal_conductivity() == k_Na
     assert tester.cp == cp_Na
     assert isinstance(tester, LiquidMaterial)

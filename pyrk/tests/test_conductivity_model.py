@@ -8,6 +8,7 @@ beta = 3.0 * u_con / units.kelvin
 km_constant = conductivity_model.ConductivityModel(a=alpha, 
                                                    b=beta, 
                                                    model="constant")
+
 km_linear = conductivity_model.ConductivityModel(a=alpha, 
                                                  b=beta, 
                                                  model="linear")
@@ -24,7 +25,7 @@ def test_default_constructor():
     km = conductivity_model.ConductivityModel()
     assert km.a == 0 * u_con
     assert km.b == 0 * u_con / units.kelvin
-    assert km.model == 'linear'
+    assert km.model == 'constant'
     assert km.thermal_conductivity() == km.a
 
 
@@ -44,8 +45,8 @@ def test_constant():
 
 
 def test_flibe():
-    a_flibe = 2415.6 * u_con
-    b_flibe = 0.49072 * u_con / units.kelvin
+    a_flibe = 0.7662 * u_con
+    b_flibe = 0.0005 * u_con / units.kelvin
     assert km_flibe.model == 'linear'
     assert km_flibe.thermal_conductivity(0 * units.kelvin) == a_flibe
     assert km_flibe.thermal_conductivity() == a_flibe

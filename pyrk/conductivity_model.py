@@ -44,6 +44,7 @@ class ConductivityModel(object):
         :param temp: the temperature
         :type temp: float.
         """
+        temp_celcius = temp - (273.15 * units.kelvin)
         return self.implemented[self.model](temp)
     
     def constant(self, temp=0 * units.kelvin):
@@ -62,7 +63,7 @@ class ConductivityModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
-
-        T_celcius = (temp.m - 273.15) * units.kelvin
-        ret = self.a + self.b * T_celcius
-        return ret 
+        if temp == 0 * units.kelvin:
+            return self.a
+        ret = self.a + self.b * temp
+        return ret

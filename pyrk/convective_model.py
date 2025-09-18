@@ -93,6 +93,9 @@ class ConvectiveModel(object):
         :type k: float
         """
 
+        if mu.magnitude == 0:
+            mu = self.mu
+
         u = self.m_flow / (self.a_flow * rho)
 
         Re = rho * self.length_scale * u / mu
