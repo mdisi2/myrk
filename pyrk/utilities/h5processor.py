@@ -45,11 +45,7 @@ class H5Processor(object):
 # self.t0 = sim_info['t0']
 # self.tf = sim_info['tf']
 # self.nsteps 
-# self.t_idx = np.linspace(self.t0,self.tf,"lenght of temp array")
-# self.comp_names = np.unique(f['th']['th_timeseries']['component'][:])
-
-
-# ^^^^^^^^^^^^^^^^^^ Like this
+# self.t_idx = np.linspace(self.t0,self.tf,"length of temp array")
 
 
     def __init__(self,
@@ -248,12 +244,6 @@ class H5Processor(object):
         if self.multisim is True:
             self.plot_power_comparison()
             self.plot_difference_rho()
-
-
-            # plt.title('Power Comparison')
-            # plt.ylabel('Power [Watts]')
-            # filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
-            # self.style(filepath)
     
     def plot_power_comparison(self):
             
