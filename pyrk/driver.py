@@ -17,7 +17,7 @@ from pyrk.utilities import plotter
 from pyrk.utilities.logger import pyrklog
 from pyrk.inp import sim_info
 from pyrk.utilities.ur import units
-from pyrk.utilities.h5processor import H5Processor
+from pyrk.utilities.h5_processor import H5Processor
 import os
 
 
@@ -265,10 +265,10 @@ def main(args, curr_dir):
     print(si.plotdir)
     pyrklog.critical("\nSimulation succeeded.\n")
 
-    Sim = H5Processor(infile=[args.outfile],
+    sim_plots = H5Processor(infile=[args.outfile], #processor infile is sim outfile
                       names=[''],
                       plotdir=args.plotdir)
-    Sim.h5plot()
+    sim_plots.h5plot()
     
 
 """Run it as a script"""
