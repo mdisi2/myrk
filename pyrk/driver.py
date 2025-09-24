@@ -19,9 +19,6 @@ from pyrk.utilities.progressbar import ProgressBar
 from pyrk.inp import sim_info
 from pyrk.utilities.ur import units
 import os
-import cProfile #urrrr
-import pstats
-import io
 
 
 def update_n(t, y_n, si):
@@ -238,10 +235,25 @@ def load_infile(infile_path):
     infile = importlib.import_module(file_name)
     return infile
 
+def post_profiling(profile, args):
+    import pstats
+    import io
+    profile.disable()
+    # Print profiler stats to terminal and log
+    s = io.StringIO()
+    stats = pstats.Stats(profile, stream=s)
+    stats.sort_stats('cumulative').print_stats(50)
+    # Print to terminal
+    print("\nProfiler Stats:\n" + s.getvalue())
+    # Print to logger
+    pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
+    profile.dump_stats(args.profilerstats)
 
 def main(args, curr_dir):
-    profile = cProfile.Profile()
-    profile.enable()
+    if args.enable_profiler is True:
+        import cProfile
+        profile = cProfile.Profile()
+        profile.enable()
     np.set_printoptions(precision=5, threshold=np.inf)
     logger.set_up_pyrklog(args.logfile)
     infile = load_infile(args.infile)
@@ -272,20 +284,10 @@ def main(args, curr_dir):
     print(si.plotdir)
     plotter.plot(sol, si)
 
-    ## Profiler Treatment
-    profile.disable()
-    # Print profiler stats to terminal and log
-    s = io.StringIO()
-    stats = pstats.Stats(profile, stream=s)
-    stats.sort_stats('cumulative').print_stats(50)
-    # Print to terminal
-    print("\nProfiler Stats:\n" + s.getvalue())
-    # Print to logger
-    pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
-    profile.dump_stats(args.profilerstats)
+    if args.enable_profiler is True:
+        post_profiling(profile, args)
 
     pyrklog.critical("\nSimulation succeeded.\n")
-
 
 """Run it as a script"""
 if __name__ == "__main__":
@@ -303,6 +305,9 @@ if __name__ == "__main__":
     ap.add_argument('--outfile', 
                     help='the name of the output database',
                     default='pyrk.h5')
+    ap.add_argument('--enable_profiler',
+                    help='enables profiler',
+                    action='store_true')
     ap.add_argument('--profilerstats',
                     help='the name of the profiler stats file',
                     default='pyrk.prof')
