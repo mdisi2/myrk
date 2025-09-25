@@ -3,16 +3,15 @@ import tables as tb
 
 
 class NeutronicsParamsRow(tb.IsDescription):
-    """ A row describing the neutronics parameters in a component..
+    """ A row describing the neutronics parameters.
     """
     t_idx = tb.Int32Col()
-    component = tb.StringCol(16)
     rho_tot = tb.Float64Col()
     rho_ext = tb.Float64Col()
 
 
 class NeutronicsTimeseriesRow(tb.IsDescription):
-    """ A row describing the neutronics data at each timestep
+    """ A row describing the reactivity data in a component at each timestep
     """
     t_idx = tb.Int32Col()
     component = tb.StringCol(16)
