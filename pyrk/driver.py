@@ -15,7 +15,7 @@ from pyrk.db import database
 from pyrk.utilities import logger
 from pyrk.utilities import plotter
 from pyrk.utilities.logger import pyrklog
-from pyrk.utilities.progressbar import ProgressBar
+from pyrk.utilities.progress_bar import ProgressBar
 from pyrk.inp import sim_info
 from pyrk.utilities.ur import units
 import os
@@ -249,11 +249,16 @@ def post_profiling(profile, args):
     pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
     profile.dump_stats(args.profilerstats)
 
-def main(args, curr_dir):
+def initialize_profiling(args):
     if args.enable_profiler is True:
         import cProfile
         profile = cProfile.Profile()
         profile.enable()
+        return profile
+    return None
+
+def main(args, curr_dir):
+    profile = initialize_profiling(args)
     np.set_printoptions(precision=5, threshold=np.inf)
     logger.set_up_pyrklog(args.logfile)
     infile = load_infile(args.infile)
@@ -283,10 +288,10 @@ def main(args, curr_dir):
     out_db.close_db()
     print(si.plotdir)
     plotter.plot(sol, si)
-
-    if args.enable_profiler is True:
+    if args.enable_profiler is True and profile is not None:
         post_profiling(profile, args)
 
+    pyrklog.critical("\nSimulation succeeded.\n")
     pyrklog.critical("\nSimulation succeeded.\n")
 
 """Run it as a script"""
