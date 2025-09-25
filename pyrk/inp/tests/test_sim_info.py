@@ -89,10 +89,10 @@ def test_sim_id():
     info.db.delete_db()
 
 
-def test_zeta_omega_recorder():
+def test_zeta_and_omega_recorder():
     info = si.SimInfo()
-    omega_record = info.orecord(1)
-    zeta_record = info.zrecord(1)
+    omega_record = info.omega_record(1)
+    zeta_record = info.zeta_record(1)
 
     assert isinstance(zeta_record, dict)
     assert "t_idx" and 'zeta_idx' and 'zeta' in zeta_record
@@ -105,3 +105,6 @@ def test_zeta_omega_recorder():
     assert isinstance(omega_record['t_idx'],int)
     assert isinstance(omega_record['omega_idx'],int)
     assert isinstance(omega_record['omega'],float)
+    info.db.close_db()
+    info.db.delete_db()
+
