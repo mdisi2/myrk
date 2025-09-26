@@ -15,6 +15,7 @@ from pyrk.db import database
 from pyrk.utilities import logger
 from pyrk.utilities import plotter
 from pyrk.utilities.logger import pyrklog
+from pyrk.utilities.progress_bar import ProgressBar
 from pyrk.inp import sim_info
 from pyrk.utilities.ur import units
 import os
@@ -170,6 +171,7 @@ def solve(si, y, infile):
     th = ode(f_th).set_integrator('dopri5', nsteps=infile.nsteps)
     th.set_initial_value(y0_th(si), si.timer.t0.magnitude)
     th.set_f_params(si)
+    progress = ProgressBar()
     while (n.successful() and
            n.t < si.timer.tf.magnitude and
            th.t < si.timer.tf.magnitude):
@@ -179,6 +181,7 @@ def solve(si, y, infile):
         update_n(n.t, n.y, si)
         th.integrate(si.timer.current_time().magnitude)
         update_th(th.t, n.y, th.y, si)
+        progress.bar_update(si.timer)
     return si.y
 
 
@@ -232,8 +235,30 @@ def load_infile(infile_path):
     infile = importlib.import_module(file_name)
     return infile
 
+def post_profiling(profile, args):
+    import pstats
+    import io
+    profile.disable()
+    # Print profiler stats to terminal and log
+    s = io.StringIO()
+    stats = pstats.Stats(profile, stream=s)
+    stats.sort_stats('cumulative').print_stats(50)
+    # Print to terminal
+    print("\nProfiler Stats:\n" + s.getvalue())
+    # Print to logger
+    pyrklog.info("\nProfiler Stats:\n" + s.getvalue())
+    profile.dump_stats(args.profilerstats)
+
+def initialize_profiling(args):
+    if args.enable_profiler is True:
+        import cProfile
+        profile = cProfile.Profile()
+        profile.enable()
+        return profile
+    return None
 
 def main(args, curr_dir):
+    profile = initialize_profiling(args)
     np.set_printoptions(precision=5, threshold=np.inf)
     logger.set_up_pyrklog(args.logfile)
     infile = load_infile(args.infile)
@@ -263,22 +288,33 @@ def main(args, curr_dir):
     out_db.close_db()
     print(si.plotdir)
     plotter.plot(sol, si)
-    pyrklog.critical("\nSimulation succeeded.\n")
+    if args.enable_profiler is True and profile is not None:
+        post_profiling(profile, args)
 
+    pyrklog.critical("\nSimulation succeeded.\n")
+    pyrklog.critical("\nSimulation succeeded.\n")
 
 """Run it as a script"""
 if __name__ == "__main__":
     curr_dir = os.path.dirname(__file__)
     ap = argparse.ArgumentParser(description='PyRK parameters')
-    ap.add_argument('--infile', help='the name of the input file',
+    ap.add_argument('--infile',
+                    help='the name of the input file',
                     default='input')
-    ap.add_argument('--logfile', help='the name of the log file',
+    ap.add_argument('--logfile',
+                    help='the name of the log file',
                     default='pyrk.log')
-    ap.add_argument(
-        '--plotdir',
-        help='the name of the directory of output plots',
-        default='images')
-    ap.add_argument('--outfile', help='the name of the output database',
+    ap.add_argument('--plotdir',
+                    help='the name of the directory of output plots',
+                    default='images')
+    ap.add_argument('--outfile', 
+                    help='the name of the output database',
                     default='pyrk.h5')
+    ap.add_argument('--enable_profiler',
+                    help='enables profiler',
+                    action='store_true')
+    ap.add_argument('--profilerstats',
+                    help='the name of the profiler stats file',
+                    default='pyrk.prof')
     args = ap.parse_args()
     main(args, curr_dir)

@@ -1,7 +1,7 @@
 # Ignore possible build & documentation
 docs/_build/
 build/
-pyrk\.egg_info/
+pyrk\.egg-info/
 dist/
 RELEASE\-VERSION
 pyrk/RELEASE\-VERSION
@@ -19,6 +19,7 @@ __pycache__/
 # Ignore data &binary files
 *.h5
 *.ace
+*.prof
 
 # Ignore specific files
 matplotlibrc
