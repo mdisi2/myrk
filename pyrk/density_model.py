@@ -11,6 +11,7 @@ class DensityModel(object):
     def __init__(self,
                  a=0 * units.kg / pow(units.meter, 3),
                  b=0 * units.kg / units.kelvin / pow(units.meter, 3),
+                 array = None,
                  model="linear"):
         """
         Initializes the DensityModel object.
@@ -24,9 +25,11 @@ class DensityModel(object):
         """
         self.a = a.to(units.kg / pow(units.meter, 3))
         self.b = b.to(units.kg / units.kelvin / pow(units.meter, 3))
+        self.array = array
 
         self.implemented = {'constant': self.constant,
-                            'linear': self.linear}
+                            'linear': self.linear,
+                            'pincel': self.pincell}
 
         if model in self.implemented.keys():
             self.model = model
@@ -66,3 +69,8 @@ class DensityModel(object):
         """
         ret = self.a + self.b * temp
         return ret
+
+
+    def pincell(self,timestep):
+        
+        return self.array[timestep]

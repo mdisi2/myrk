@@ -135,7 +135,7 @@ class THComponent(object):
         :return: the density of this component
         :rtype: float, in units of $kg/m^3$
         """
-        ret = self.dm.rho(self.temp(timestep))
+        ret = self.dm.rho(timestep) * units.kg / (units.meter)**3
         return ret
 
     def update_temp(self, timestep, temp):
