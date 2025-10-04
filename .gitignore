@@ -19,6 +19,7 @@ __pycache__/
 # Ignore data &binary files
 *.h5
 *.ace
+*.prof
 
 # Ignore specific files
 matplotlibrc
