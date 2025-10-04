@@ -99,14 +99,15 @@ class SimInfo(object):
             self.db.register_recorder('th', 'th_params',
                                       c.metadata,
                                       timeseries=False)
-            self.db.register_recorder('neutronics','neutronics_timeseries',
+            self.db.register_recorder('neutronics', 
+                                      'neutronics_timeseries',
                                       recorder= c.neutronics_metadata,
                                       timeseries=True)
             
 
         for z in range(self.n_pg):
             self.db.register_recorder(
-                'neutronics', 'zetas',
+                'neutronics', 'neutronics_timeseries',
                 recorder=functools.partial(self.zeta_record, z),
                 timeseries=True)
             
@@ -233,13 +234,13 @@ class SimInfo(object):
         return rec
     
     def zeta_record(self, i):
-        """A recorder function for the neutronics/zetas table"""
-        t_idx = self.timer.current_timestep() - 1
-        rec = {
-            "t_idx": t_idx,
-            "zeta_idx": i + 1,
-            "zeta": self.y[t_idx, i + 1]}
-        return rec
+        """A recorder function for the neutronics timeseries table"""
+        for group in range(1,self.n_pg):
+            t_idx = self.timer.current_timestep() - 1
+            rec = {
+                f"zeta_{group}": self.y[t_idx, i + 1]
+                },
+            return rec
     
     def omega_record(self, i):
         """A recorder function for the th/omegas table"""
