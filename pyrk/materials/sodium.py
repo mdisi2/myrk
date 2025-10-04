@@ -2,6 +2,7 @@ from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.materials.liquid_material import LiquidMaterial
 from pyrk.conductivity_model import ConductivityModel
+from pyrk.viscosity_model import ViscosityModel
 
 
 class Sodium(LiquidMaterial):
@@ -34,9 +35,16 @@ class Sodium(LiquidMaterial):
         Below is an estimate of sodium k_th at temperatures around 400C
         based on table 2.1-1 in http://www.ne.anl.gov/eda/ANL-RE-95-2.pdf
 
-        (but, note that wikipedia gives it as 142 W/m-K...)
+        'Thermodynamic and Transport Properties of Sodium
+        Liquid and Vapor' by J. K. Fink and L. Leibowitz (181)
         """
-        return ConductivityModel(a = 70.0 * units.watt / (units.meter * units.kelvin))
+
+        u_tk = units.watt / (units.meter * units.kelvin)
+        return ConductivityModel(a=124.67 * u_tk,
+                                 b=-0.11381 * u_tk / units.kelvin,
+                                 c=5.5226e-5 * u_tk / (units.kelvin)**2,
+                                 d=-1.1842e-4 * u_tk / (units.kelvin)**3,
+                                 model='sodium')
 
     def specific_heat_capacity(self):
         """Specific heat capacity of Sodium [J/kg/K]
@@ -137,3 +145,13 @@ class SodiumDensity(DensityModel):
 
     def rho(self, temp=0.0 * units.kelvin):
         return self.hornung(temp)
+    
+    def dynamic_viscosity(self):
+        """dynamic viscosity of sodium 
+        according to ANL-RE-95-2.pdf 
+        in ranges of 371k to 2500K are
+
+        ln(mu) = -6.44006 - 0.3958 * ln(T) + (556.835 / T)
+        """
+
+        return ViscosityModel(model='sodium')

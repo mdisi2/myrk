@@ -60,7 +60,7 @@ class THSystem(object):
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
                                             h=d['h'].h(rho=env.rho(t_idx),
-                                                       mu=env.mat.mu,
+                                                       mu=env.mu(t_idx),
                                                        k=env.k(t_idx),
                                             R=d["R"])) 
                 to_ret -= QconvBC / cap
@@ -87,12 +87,12 @@ class THSystem(object):
                     Tr = env.compute_tr(t_env = component.T[t_idx].magnitude,
                                         t_innercomp= env.sub_comp[-2].T[t_idx].magnitude,
                                         h=d['h'].h(rho =component.rho(t_idx),
-                                                   mu = component.mat.mu,
+                                                   mu = component.mu(t_idx),
                                                    k = component.k(t_idx)))
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(rho = component.rho(t_idx),
-                                                       mu = component.mat.mu,
+                                                       mu = component.mu(t_idx),
                                                        k = component.k(t_idx)),
                                             A=d['area'])
                     # assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
@@ -106,12 +106,12 @@ class THSystem(object):
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         h_conv = d['h'].h(rho = component.rho(t_idx),
-                                          mu = component.mat.mu,
+                                          mu = component.mu(t_idx),
                                           k = component.k(t_idx))
                     else:
                         if isinstance(env.mat, LiquidMaterial):
                             h_conv = d['h'].h(rho = env.rho(t_idx), 
-                                              mu = env.mat.mu,
+                                              mu = env.mu(t_idx),
                                               k = env.k(t_idx))
                         else:
                             msg = 'neither of the components are liquid:'

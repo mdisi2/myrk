@@ -9,6 +9,8 @@ class ConductivityModel(object):
     def __init__(self,
                  a=0 * units.watt / units.kelvin / units.meter,
                  b=0 * units.watt / units.kelvin / units.meter / units.kelvin,
+                 c=None,
+                 d=None,
                  model="constant"):
         """
         Initializes the ConductivityModel object.
@@ -17,14 +19,22 @@ class ConductivityModel(object):
         :type model: string
         :param a: first coefficient of the model - the constant term 
         :type a: float.
-        :param b: second coefficient of the model - the term multiplied by temperature.
+        :param b: first order the temp coefficient T^1.
         :type b: float
+        :param c: second order the temp coefficient T^2.
+        :type c: float
+        :param d: second order the temp coefficient T^3.
+        :type d: float
         """
         self.a = a.to(units.watt / units.kelvin / units.meter)
         self.b = b.to(units.watt / units.kelvin / units.meter / units.kelvin)
+        self.c = c
+        self.d = d
+
 
         self.implemented = {'constant': self.constant,
-                            'linear': self.linear}
+                            'linear': self.linear,
+                            'sodium': self.sodium}
 
         if model in self.implemented.keys():
             self.model = model
@@ -44,7 +54,6 @@ class ConductivityModel(object):
         :param temp: the temperature
         :type temp: float.
         """
-        temp_celcius = temp - (273.15 * units.kelvin)
         return self.implemented[self.model](temp)
     
     def constant(self, temp=0 * units.kelvin):
@@ -65,5 +74,27 @@ class ConductivityModel(object):
         """
         if temp == 0 * units.kelvin:
             return self.a
-        ret = self.a + self.b * temp
+        
+        temp_c = temp.to('degC')
+        ret = (self.a).magnitude + (self.b).magnitude * (temp_c).magnitude
+        return ret * units.watt / units.kelvin / units.meter,
+    
+    def sodium(self, temp=0.0 * units.kelvin):
+
+        """Third order thermal conductivity model for the sodium 
+        liquid material
+        
+        ###k &= 124.67 - 0.11381 \, T #b
+        # + 5.5226 \times 10^{-5} \, T^2 #c
+        # - 1.1842 \times 10^{-8} \, T^3 #d
+        """
+        
+        T = (temp.to('kelvin')).magnitude
+        A = (self.a).magnitude
+        B = (self.b).magnitude
+        C = (self.c).magnitude
+        D = (self.d).magnitude
+
+        ret = A + B*T+ C*(temp**2) + D*(temp**3)
+
         return ret

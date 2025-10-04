@@ -3,6 +3,7 @@ from pyrk.utilities.ur import units
 from pyrk.density_model import DensityModel
 from pyrk.inp import validation
 from pyrk.conductivity_model import ConductivityModel
+from pyrk.viscosity_model import ViscosityModel
 
 
 class LiquidMaterial(Material):
@@ -13,7 +14,7 @@ class LiquidMaterial(Material):
                  k=ConductivityModel(),
                  cp=0 * units.joule / units.kg / units.kelvin,
                  dm=DensityModel(),
-                 mu=0 * units.pascal * units.seconds):
+                 mu=ViscosityModel()):
         """Initalizes a material
 
         :param name: The name of the component (i.e., "fuel" or "cool")
@@ -25,10 +26,16 @@ class LiquidMaterial(Material):
         :param dm: The density of the material
         :type dm: DensityModel object
         :param mu: dynamic viscosity(for fluid), :math:`mu`, in :math:`Pa.s`
-        :type mu: float, pint.unit.Quantity :math:`Pa.s`
+        :type mu: ViscosityMode() object
         """
-        Material.__init__(self, name, k, cp, dm)
-        self.mu = mu.to('pascal*seconds')
-        validation.validate_ge("mu", mu, 0 * units.pascal * units.seconds)
 
-        #just seeing if super() does anything different
+        Material.__init__(self, name, k, cp, dm)
+
+        if isinstance(mu, ViscosityModel):
+            self.mu = mu
+        else:
+            mu = mu.to('pascal*seconds')
+            assert mu.units == (units.pascal * units.seconds), \
+            "mu must be pascal * seconds"
+            self.mu = ViscosityModel(model='constant', 
+                                    a=mu)

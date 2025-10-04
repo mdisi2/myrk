@@ -6,6 +6,7 @@ from pyrk.timer import Timer
 import math
 from pyrk.materials.material import Material
 from pyrk.convective_model import ConvectiveModel
+from pyrk.materials.liquid_material import LiquidMaterial
 
 
 class THComponent(object):
@@ -80,6 +81,9 @@ class THComponent(object):
         self.sph = sph
         self.ri = ri.to('meter')
         self.ro = ro.to('meter')
+
+        if isinstance(self.mat, LiquidMaterial):
+            self.vm = mat.mu
 
     def mesh(self, size):
         '''cut a THComponent into a list of smaller components
@@ -161,6 +165,21 @@ class THComponent(object):
         else:
             Temp = self.temp(timestep -1)
         ret = self.km.thermal_conductivity(Temp)
+        return ret
+    
+    def mu(self,timestep):
+        """The dynamic viscosity (mu) of componenent
+
+        :param timestep: the timestep at which to query the temperature
+        :type timestep: int
+        :return: the dynamic viscosity of this component
+        :rtype: float in units, pascals * seconds
+        """
+        if timestep == 0:
+            Temp = self.T[0]
+        else:
+            Temp = self.temp(timestep -1)
+        ret = self.vm.mu(Temp)
         return ret
 
     def update_temp(self, timestep, temp):
