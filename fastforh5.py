@@ -42,10 +42,10 @@ core_outer_radius = 1.25 * units.meter  #
 t0 = 0.00 * units.seconds
 
 # Timestep
-dt = 0.005 * units.seconds
+dt = 0.025 * units.seconds
 
 # Final Time
-tf = 5.0 * units.seconds
+tf = 2.0 * units.seconds
 
 
 def area_sphere(r):
@@ -113,7 +113,7 @@ ti = Timer(t0=t0, tf=tf, dt=dt)
 n_pg = 6
 
 # Number of decay heat groups
-n_dg = 0
+n_dg = 11
 
 # Fissioning Isotope
 fission_iso = "u235"

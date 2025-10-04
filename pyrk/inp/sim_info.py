@@ -101,21 +101,20 @@ class SimInfo(object):
                                       timeseries=False)
             self.db.register_recorder('neutronics', 
                                       'neutronics_timeseries',
-                                      recorder= c.neutronics_metadata,
+                                      recorder= c.ne_record_timeseries,
                                       timeseries=True)
             
 
-        for z in range(self.n_pg):
-            self.db.register_recorder(
-                'neutronics', 'neutronics_timeseries',
-                recorder=functools.partial(self.zeta_record, z),
-                timeseries=True)
+        #Zeta Treatment
+        self.db.register_recorder(
+            'neutronics', 'zetas',
+            recorder=functools.partial(self.zeta_record),
+            timeseries=True)
             
         if self.n_dg > 0 :
-            for o in range(self.n_dg):
                 self.db.register_recorder(
                     'th', 'omegas',
-                    recorder=functools.partial(self.omega_record, o),
+                    recorder=functools.partial(self.omega_record),
                     timeseries=True)
 
     def init_rho_ext(self, rho_ext):
@@ -233,20 +232,18 @@ class SimInfo(object):
                'power': power}
         return rec
     
-    def zeta_record(self, i):
-        """A recorder function for the neutronics timeseries table"""
-        for group in range(1,self.n_pg):
-            t_idx = self.timer.current_timestep() - 1
-            rec = {
-                f"zeta_{group}": self.y[t_idx, i + 1]
-                },
-            return rec
+    def zeta_record(self):
+        """A recorder function for the neutronics_timeseries table"""
+        t_idx = self.timer.current_timestep() - 1
+        rec = {'t_idx': t_idx}
+        for z in range(0,self.n_pg):
+            rec[f'zeta_{z+1}'] = self.y[t_idx, z + 1]
+        return rec
     
-    def omega_record(self, i):
+    def omega_record(self):
         """A recorder function for the th/omegas table"""
         t_idx = self.timer.current_timestep() - 1
-        rec = {
-            "t_idx": t_idx,
-            "omega_idx": i + 1,
-            "omega": self.y[t_idx, (self.n_pg + i) + 1]}
+        rec = {"t_idx": t_idx}
+        for o in range(self.n_dg):
+            rec[f"omega_{o+1}"] = self.y[t_idx, (self.n_pg + o) + 1]
         return rec

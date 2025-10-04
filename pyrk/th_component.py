@@ -306,7 +306,7 @@ class THComponent(object):
               }
         return rec
     
-    def neutronics_metadata(self):
+    def ne_record_timeseries(self):
         """A recorder function to hold reactivity in each component for the
         neutronics/neutronics_timeseries table
         """
@@ -315,11 +315,10 @@ class THComponent(object):
             rec = {'t_idx': timestep,
                 'component': self.name,
                 'rho': self.temp_reactivity(timestep)}
-        else:
+        if timestep == 0:
             rec = {'t_idx': 0,
                 'component': self.name,
                 'rho': 0.0}
-        
         return rec
 
 class THSuperComponent(THComponent):
