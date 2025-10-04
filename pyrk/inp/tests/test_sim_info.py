@@ -89,22 +89,28 @@ def test_sim_id():
     info.db.delete_db()
 
 
-def test_zeta_and_omega_recorder():
+def test_zeta_recorder():
     info = si.SimInfo()
-    omega_record = info.omega_record(1)
-    zeta_record = info.zeta_record(1)
-
+    zeta_record = info.zeta_record()
     assert isinstance(zeta_record, dict)
-    assert "t_idx" and 'zeta_idx' and 'zeta' in zeta_record
+    assert "t_idx" in zeta_record
     assert isinstance(zeta_record['t_idx'],int)
-    assert isinstance(zeta_record['zeta_idx'],int)
-    assert isinstance(zeta_record['zeta'],float)
+    for i in range(0,6):
+        assert f"zeta_{i+1}" in zeta_record
+        assert isinstance(zeta_record[f'zeta_{i+1}'],float)
+    info.db.close_db()
+    info.db.delete_db()
 
+
+def test_omega_record():
+    info = si.SimInfo()
+    omega_record = info.omega_record()
     assert isinstance(omega_record, dict)
-    assert "t_idx" and 'omega_idx' and 'omega' in omega_record
+    assert "t_idx" in omega_record
     assert isinstance(omega_record['t_idx'],int)
-    assert isinstance(omega_record['omega_idx'],int)
-    assert isinstance(omega_record['omega'],float)
+    for i in range(0,11):
+        assert f"omega_{i+1}" in omega_record
+        assert isinstance(omega_record[f'omega_{i+1}'],float)
     info.db.close_db()
     info.db.delete_db()
 
