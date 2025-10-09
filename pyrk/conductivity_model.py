@@ -76,8 +76,8 @@ class ConductivityModel(object):
             return self.a
         
         temp_c = temp.to('degC')
-        ret = (self.a).magnitude + (self.b).magnitude * (temp_c).magnitude
-        return ret * units.watt / units.kelvin / units.meter,
+        ret = self.a.magnitude + self.b.magnitude * temp_c.magnitude
+        return ret * units.watt / units.kelvin / units.meter
     
     def sodium(self, temp=0.0 * units.kelvin):
 

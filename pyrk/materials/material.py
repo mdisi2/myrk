@@ -17,7 +17,7 @@ class Material(object):
 
         :param name: The name of the component (i.e., "fuel" or "cool")
         :type name: str.
-        :param km: The thermal conductivity of the component
+        :param k: The thermal conductivity of the component
         :type km: ConductivityModel object
         :param cp: specific heat capacity, :math:`c_p`, in :math:`J/kg-K`
         :type cp: float, pint.unit.Quantity :math:`J/kg-K`
