@@ -39,3 +39,15 @@ class LiquidMaterial(Material):
             "mu must be pascal * seconds"
             self.mu = ViscosityModel(model='constant', 
                                     a=mu)
+            
+    def viscosity(self,temp):
+        """
+        The dynamic viscosity of this material as a function of temperature.
+
+        :param temp: the temperature
+        :type temp: pint quantity in units.kelvin
+        :return: the dynamic viscosity of this component
+        :rtype: float, in units of :math:`pa /cdot s`
+        """
+        ret = self.mu.dynamic_viscosity(temp)
+        return ret

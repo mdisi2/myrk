@@ -57,9 +57,7 @@ class ViscosityModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
-        temp = temp.to(units.kelvin)
-        ret = self.a * exp(self.b / (950 * units.kelvin) )
-        return ret
+        return self.a
     
     def exponential(self, temp=0.0 * units.kelvin):
         """
@@ -71,6 +69,9 @@ class ViscosityModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
+        if temp.magnitude <= 0:
+            raise ZeroDivisionError("Temperature must be greater than zero for viscosity's exponential mode.")
+
         temp = temp.to(units.kelvin)
         ret = self.a * exp(self.b / temp)
         return ret

@@ -25,6 +25,8 @@ class ConductivityModel(object):
         :type c: float
         :param d: second order the temp coefficient T^3.
         :type d: float
+        :param celcius: first order celcius dependent term
+        :type celcius: quantity 
         """
         self.a = a.to(units.watt / units.kelvin / units.meter)
         self.b = b.to(units.watt / units.kelvin / units.meter / units.kelvin)
@@ -72,12 +74,13 @@ class ConductivityModel(object):
         :param temp: The temperature of the object
         :type temp: float.
         """
-        if temp == 0 * units.kelvin:
+        if temp > (273.15*units.kelvin):
+            temp_c = temp - (273.15*units.kelvin)
+        else:
             return self.a
         
-        temp_c = temp.to('degC')
-        ret = self.a.magnitude + self.b.magnitude * temp_c.magnitude
-        return ret * units.watt / units.kelvin / units.meter
+        ret = self.a + self.b * temp_c
+        return ret
     
     def sodium(self, temp=0.0 * units.kelvin):
 
@@ -90,11 +93,11 @@ class ConductivityModel(object):
         """
         
         T = (temp.to('kelvin')).magnitude
-        A = (self.a).magnitude
-        B = (self.b).magnitude
-        C = (self.c).magnitude
-        D = (self.d).magnitude
+        A = 124.67
+        B = -0.11381
+        C = 5.5226e-5
+        D = -1.1842e-8
 
-        ret = A + B*T+ C*(temp**2) + D*(temp**3)
+        ret = A + B*T+ C*(T**2) + D*(T**3)
 
-        return ret
+        return ret * units.watt / units.meter / units.kelvin

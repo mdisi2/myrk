@@ -7,8 +7,8 @@ tester = flibe.Flibe(name=name)
 
 
 T0 = 700.0 * units.kelvin
-k_at_time_zero = 0.7662 * units.watt / (units.meter * units.kelvin) + \
-    T0 * 0.0005 * units.watt / units.meter / units.kelvin / units.kelvin
+k_at_time_zero = 0.7662 * units.watt / (units.meter * units.kelvin)+\
+    (T0-273.15*units.kelvin) * 0.0005 * units.watt / units.meter / units.kelvin / units.kelvin
 k_at_temp_zero = 0.7662 * units.watt / (units.meter * units.kelvin)
 cp_flibe = 2415.78 * units.joule / (units.kg * units.kelvin)
 rho_at_time_zero = 2413.2172 * units.kg / units.meter**3 - \
@@ -24,7 +24,3 @@ def test_constructor():
     assert tester.rho(T0) == rho_at_time_zero
     assert tester.rho(0 * units.kelvin) == rho_at_temp_zero
     assert isinstance(tester, LiquidMaterial)
-
-
-print(tester.k.thermal_conductivity(T0))
-print(k_at_time_zero)

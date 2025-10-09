@@ -40,11 +40,7 @@ class Sodium(LiquidMaterial):
         """
 
         u_tk = units.watt / (units.meter * units.kelvin)
-        return ConductivityModel(a=124.67 * u_tk,
-                                 b=-0.11381 * u_tk / units.kelvin,
-                                 c=5.5226e-5 * u_tk / (units.kelvin)**2,
-                                 d=-1.1842e-4 * u_tk / (units.kelvin)**3,
-                                 model='sodium')
+        return ConductivityModel(model='sodium')
 
     def specific_heat_capacity(self):
         """Specific heat capacity of Sodium [J/kg/K]

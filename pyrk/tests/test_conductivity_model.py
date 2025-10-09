@@ -33,8 +33,8 @@ def test_linear():
     assert km_linear.model == 'linear'
     assert km_linear.thermal_conductivity(0 * units.kelvin) == alpha
     assert km_linear.thermal_conductivity() == alpha
-    assert (km_linear.thermal_conductivity(1 * units.kelvin) ==
-            alpha + beta * 1.0 * units.kelvin)
+    assert (km_linear.thermal_conductivity(400 * units.kelvin) ==
+            alpha + beta * (400-273.15) * units.kelvin)
 
 
 def test_constant():
@@ -50,5 +50,4 @@ def test_flibe():
     assert km_flibe.model == 'linear'
     assert km_flibe.thermal_conductivity(0 * units.kelvin) == a_flibe
     assert km_flibe.thermal_conductivity() == a_flibe
-    assert (km_flibe.thermal_conductivity(1 * units.kelvin) == a_flibe +
-            b_flibe * 1.0 * units.kelvin)
+    assert (km_flibe.thermal_conductivity(700 * units.kelvin) == a_flibe + b_flibe * (700-273.15) * units.kelvin)

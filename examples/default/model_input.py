@@ -7,6 +7,7 @@ from pyrk.density_model import DensityModel
 from pyrk.viscosity_model import ViscosityModel
 from pyrk.materials.material import Material
 from pyrk.materials.liquid_material import LiquidMaterial
+from pyrk.convective_model import ConvectiveModel
 
 #############################################
 #
@@ -87,9 +88,6 @@ a_mod = area_sphere(r_pebble) * n_pebbles
 a_graph_peb = area_sphere(r_pebble) * n_graph_peb
 a_fuel = area_sphere(r_particle) * n_pebbles * n_particles_per_pebble
 a_refl = 2 * math.pi * core_outer_radius * core_height
-
-h_mod = 4700 * units.watt / units.kelvin / units.meter**2
-h_refl = 600 * units.watt / units.kelvin / units.meter**2
 
 # modified alphas for mod
 vol_mod_tot = vol_mod + vol_graph_peb + vol_core
@@ -189,6 +187,19 @@ GraphPebble = Material(name='graph_peb',
                         dm=DensityModel(a=1740. * 
                                         units.kg / (units.meter**3),
                                         model="constant"))
+
+
+h_mod = ConvectiveModel(model='wakao',
+                        mat=Cool,
+                        m_flow=976.0*0.3 *units.kg/ units.second,
+                        a_flow= 0.4 * (core_outer_radius**2 - core_inner_radius**2) * 3.14159, # porosity 40%,
+                        length_scale=r_pebble * 2)
+
+h_refl = ConvectiveModel(h0=600 * 
+                         units.watt / units.kelvin / units.meter**2,
+                         model='constant')
+
+#################################################################
 
 fuel = th.THComponent(name="fuel",
                       mat=Fuel,

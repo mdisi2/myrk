@@ -59,10 +59,5 @@ class Material(object):
         :rtype: pint quantity in units watts / meter / kelvin
         """
 
-        if hasattr(temp, 'units') and temp.units == units.kelvin:
-            t = temp
-        else:
-            t = temp * units.kelvin
-
-        ret = self.k.thermal_conductivity(t)
+        ret = self.k.thermal_conductivity(temp)
         return ret

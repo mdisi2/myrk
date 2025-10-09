@@ -60,8 +60,8 @@ class THSystem(object):
                                             t_b=component.T[t_idx].magnitude,
                                             t_env=env.T[t_idx].magnitude,
                                             h=d['h'].h(rho=env.rho(t_idx),
-                                                       mu=env.mu(t_idx),
-                                                       k=env.k(t_idx),
+                                                       mu=env.mu_tdx(t_idx),
+                                                       k=env.k_tdx(t_idx),
                                             R=d["R"])) 
                 to_ret -= QconvBC / cap
             if component.heatgen:
@@ -87,13 +87,13 @@ class THSystem(object):
                     Tr = env.compute_tr(t_env = component.T[t_idx].magnitude,
                                         t_innercomp= env.sub_comp[-2].T[t_idx].magnitude,
                                         h=d['h'].h(rho =component.rho(t_idx),
-                                                   mu = component.mu(t_idx),
-                                                   k = component.k(t_idx)))
+                                                   mu = component.mu_tdx(t_idx),
+                                                   k = component.k_tdx(t_idx)))
                     Qconv = self.convection(t_b=component.T[t_idx].magnitude,
                                             t_env=Tr,
                                             h=d['h'].h(rho = component.rho(t_idx),
-                                                       mu = component.mu(t_idx),
-                                                       k = component.k(t_idx)),
+                                                       mu = component.mu_tdx(t_idx),
+                                                       k = component.k_tdx(t_idx)),
                                             A=d['area'])
                     # assert (Qconv * (component.T[t_idx].magnitude - Tr)) >= 0, '''
                     # convection from %s to %s, from low temperature %f to
@@ -106,13 +106,13 @@ class THSystem(object):
                 else:
                     if isinstance(component.mat, LiquidMaterial):
                         h_conv = d['h'].h(rho = component.rho(t_idx),
-                                          mu = component.mu(t_idx),
-                                          k = component.k(t_idx))
+                                          mu = component.mu_tdx(t_idx),
+                                          k = component.k_tdx(t_idx))
                     else:
                         if isinstance(env.mat, LiquidMaterial):
                             h_conv = d['h'].h(rho = env.rho(t_idx), 
-                                              mu = env.mu(t_idx),
-                                              k = env.k(t_idx))
+                                              mu = env.mu_tdx(t_idx),
+                                              k = env.k_tdx(t_idx))
                         else:
                             msg = 'neither of the components are liquid:'
                             msg += env.name
@@ -155,7 +155,7 @@ class THSystem(object):
         :return : Qcondction
         :rtype:float, dimensionless
         '''
-        conductivity = component.k(t_idx).magnitude
+        conductivity = component.k_tdx(t_idx).magnitude
         T_b = component.T[t_idx].magnitude
         dr = (component.ro - component.ri).magnitude
         return (conductivity * T_b) / (dr**2)
@@ -219,7 +219,7 @@ class THSystem(object):
         r_b = component.ro.magnitude
         r_env = env.ro.magnitude
         dr = (component.ro - component.ri).magnitude
-        k_c = component.k(t_idx).magnitude
+        k_c = component.k_tdx(t_idx).magnitude
         return k_c / r_b * (r_b * T_b - r_env * T_env) / (dr**2)
 
     def conduction_slab(self, component, env, t_idx, L, A):
@@ -240,7 +240,7 @@ class THSystem(object):
         T_b = component.T[t_idx].magnitude
         T_env = env.T[t_idx].magnitude
         num = (T_b - T_env)
-        k = component.k(t_idx)
+        k = component.k_tdx(t_idx)
         denom = (L / (k * A)).magnitude
         return num / denom
 

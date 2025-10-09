@@ -151,7 +151,7 @@ class THComponent(object):
         ret = self.dm.rho(Temp)
         return ret
     
-    def k(self, timestep):
+    def k_tdx(self, timestep):
         """The thermal conductivity (k) of this
         componenent's materials
 
@@ -167,7 +167,7 @@ class THComponent(object):
         ret = self.km.thermal_conductivity(Temp)
         return ret
     
-    def mu(self,timestep):
+    def mu_tdx(self,timestep):
         """The dynamic viscosity (mu) of componenent
 
         :param timestep: the timestep at which to query the temperature
