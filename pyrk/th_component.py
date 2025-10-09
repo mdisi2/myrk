@@ -179,7 +179,7 @@ class THComponent(object):
             Temp = self.T[0]
         else:
             Temp = self.temp(timestep -1)
-        ret = self.vm.mu(Temp)
+        ret = self.vm.dynamic_viscosity(Temp)
         return ret
 
     def update_temp(self, timestep, temp):
