@@ -105,12 +105,13 @@ class SimInfo(object):
                                       timeseries=True)
             
 
-        #Zeta Treatment
+        # Zeta Treatment
         self.db.register_recorder(
             'neutronics', 'zetas',
             recorder=functools.partial(self.zeta_record),
             timeseries=True)
             
+        # Omega Recording
         if self.n_dg > 0 :
                 self.db.register_recorder(
                     'th', 'omegas',
