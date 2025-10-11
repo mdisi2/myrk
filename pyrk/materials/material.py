@@ -28,7 +28,6 @@ class Material(object):
         self.cp = cp.to('joule/kg/kelvin')
         validation.validate_ge(
             "cp", cp, 0 * units.joule / units.kg / units.kelvin)
-        self.dm = dm
 
         if isinstance(k, ConductivityModel):
             self.k = k
@@ -36,6 +35,13 @@ class Material(object):
             assert k.units == (units.watts / units.meter / units.kelvin), "k must be watts/meter/kelvin"
             self.k = ConductivityModel(model='constant', 
                                        a=k)
+            
+        if isinstance(dm, DensityModel):
+            self.dm = dm
+        else:
+            assert dm.units == (units.kg / units.meter / units.meter /units.meter), "k must be mass / volume"
+            self.dm = DensityModel(model='constant', 
+                                       a=dm)
 
     def rho(self, temp):
         """
@@ -46,6 +52,7 @@ class Material(object):
         :return: the density of this component
         :rtype: float, in units of :math:`kg/m^3`
         """
+        
         ret = self.dm.rho(temp)
         return ret
 

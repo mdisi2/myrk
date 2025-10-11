@@ -28,7 +28,7 @@ def test_constructor_liq():
     assert defaultLiq.name == name
     assert defaultLiq.thermal_conductivity(0 * units.kelvin) == k_default
     assert defaultLiq.cp == cp_default
-    assert defaultLiq.viscosity(0*units.kelvin) == mu_default
+    assert defaultLiq.dynamic_viscosity(0*units.kelvin) == mu_default
     assert defaultLiq.rho(T0) == rho_at_time_zero
     assert defaultLiq.rho(0 * units.kelvin) == rho_at_temp_zero
 

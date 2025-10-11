@@ -342,12 +342,15 @@ class THComponent(object):
                'component': self.name,
                'temp': self.temp(timestep).magnitude,
                'density': self.rho(timestep).magnitude,
-               'k': self.k(timestep).magnitude,
+               'k': self.k_tdx(timestep).magnitude,
                'cp': self.cp.magnitude,
                'alpha_temp': self.alpha_temp.magnitude,
                'heatgen': self.heatgen,
                'power_tot': self.power_tot.magnitude
               }
+        if isinstance(self.mat, LiquidMaterial):
+            rec['mu'] = self.mu_tdx(timestep).magnitude
+
         return rec
 
 

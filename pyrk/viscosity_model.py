@@ -93,6 +93,5 @@ class ViscosityModel(object):
         """
 
         T = temp.to(units.kelvin).magnitude
-        ret = log(-6.4406 - 0.3958 * log(T) + (555.835/T) )
-        ret = (ret) * units.pascal * units.second
-        return ret
+        ret = exp(-6.4406) * T**(- 0.3958) * exp(556.835/T)
+        return  ret * units.pascal * units.second

@@ -15,6 +15,8 @@ mu_flibe = viscosity_model.ViscosityModel(a=1.16e-4
                                           b=3755 * units.kelvin,
                                           model="exponential")
 
+mu_sodium = viscosity_model.ViscosityModel(model="sodium")
+
 
 def test_default_constructor():
     mu = viscosity_model.ViscosityModel()
@@ -42,3 +44,11 @@ def test_flibe():
     b_flibe = 3755 * units.kelvin
     assert mu_flibe.model == 'exponential'
     assert (mu_flibe.dynamic_viscosity(100.0 * units.kelvin) == (a_flibe * exp(b_flibe / (100.0 * units.kelvin))))
+
+def test_sodium():
+
+    def s(T):
+        return exp(-6.4406) * T**(-0.3958) * exp(556.835/T) * units.pascal * units.second
+    
+    assert mu_sodium.model == 'sodium'
+    assert (mu_sodium.dynamic_viscosity(700 * units.kelvin) == s(700))

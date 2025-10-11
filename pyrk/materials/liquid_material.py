@@ -40,7 +40,7 @@ class LiquidMaterial(Material):
             self.mu = ViscosityModel(model='constant', 
                                     a=mu)
             
-    def viscosity(self,temp):
+    def dynamic_viscosity(self,temp):
         """
         The dynamic viscosity of this material as a function of temperature.
 

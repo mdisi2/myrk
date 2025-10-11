@@ -192,7 +192,7 @@ GraphPebble = Material(name='graph_peb',
 h_mod = ConvectiveModel(model='wakao',
                         mat=Cool,
                         m_flow=976.0*0.3 *units.kg/ units.second,
-                        a_flow= 0.4 * (core_outer_radius**2 - core_inner_radius**2) * 3.14159, # porosity 40%,
+                        a_flow= 0.4 * (core_outer_radius**2 - core_inner_radius**2) * 3.14159, # porosity 40%
                         length_scale=r_pebble * 2)
 
 h_refl = ConvectiveModel(h0=600 * 
