@@ -113,7 +113,7 @@ ti = Timer(t0=t0, tf=tf, dt=dt)
 n_pg = 6
 
 # Number of decay heat groups
-n_dg = 0
+n_dg = 11
 
 # Fissioning Isotope
 fission_iso = "u235"
