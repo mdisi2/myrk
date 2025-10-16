@@ -21,8 +21,6 @@ class ZetasTimestepRow(tb.IsDescription):
     """ A row descriptor for precursor concentrations at each timestep
     """
     t_idx = tb.Int32Col()
-    #zeta_idx = tb.Int32Col()
-    #zeta = tb.Float64Col()
     zeta_1 = tb.Float64Col()
     zeta_2 = tb.Float64Col()
     zeta_3 = tb.Float64Col()
@@ -35,8 +33,6 @@ class OmegasTimestepRow(tb.IsDescription):
     """ A row descriptor for decay heat powers at each timestep
     """
     t_idx = tb.Int32Col()
-    #omega_idx = tb.Int32Col()
-    #omega = tb.Float64Col()
     omega_1  = tb.Float64Col()
     omega_2  = tb.Float64Col()
     omega_3  = tb.Float64Col()

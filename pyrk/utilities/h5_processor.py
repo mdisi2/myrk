@@ -5,22 +5,6 @@ import h5py
 style_path = os.path.join(os.path.dirname(__file__), 'plotting.mplstyle')
 plt.style.use(style_path)
 
-# The th section reads two arrays, the component array
-# and the temp array. The 'component' array is a continous
-# list of the component names looping every timestep. The 
-# temp array holds the temp for corresponding index of the
-# component, also looping every timestep. Meaning Comp[0] 
-# and Temp[0] refer to the first component's temperature
-# at the first timestep. If I have 5 components, then 
-# Comp[5] and Temp[5] refer to the same component at the 
-# second timestep.
-
-# The neutronics portion reads two tables, the omegas and 
-# zetas tables. The both tables hold 3  arrays, the timestep
-# (int), group index (int), and the actual data. These group
-# indexes and corresponding data also loop for every timestep,
-# similar to the th treatment.
-
 class H5Processor(object):
 
     """
@@ -35,18 +19,6 @@ class H5Processor(object):
     :param plotdir: Directory of output files
     :type plotdir: os path
     """
-
-# TODO: take advantage of the class system:
-#       - store arrays used multiple times in the class itself
-#           -like the timestep index array as a self.t_idx
-
-# with h5py.File(infile) as f
-# self.sim_info = f['metadata']['sim_info']
-# self.t0 = sim_info['t0']
-# self.tf = sim_info['tf']
-# self.nsteps 
-# self.t_idx = np.linspace(self.t0,self.tf,"length of temp array")
-
 
     def __init__(self,
                  infile = None,
@@ -80,6 +52,25 @@ class H5Processor(object):
             self.multisim = True
         else:
             self.multisim = False
+
+
+    def h5plot(self):
+
+        self.plot_thcomponent()
+        self.plot_power_rho()
+        self.plot_zetas()
+        self.plot_omegas()
+
+    def style(self, path):
+
+        if self.multisim is True:
+            plt.legend()
+        plt.grid(True)
+        plt.xlabel(r'Time $[s]$')
+        plt.tight_layout()
+        plt.savefig(path, dpi=300, format='png')
+        plt.close()
+        print(f"Saved {path}")
 
     def color(self,n):
         colors = ["#332288", "#117733",
@@ -203,7 +194,7 @@ class H5Processor(object):
 
     def plot_power_rho(self):
 
-        os.makedirs(os.path.join(self.plotdir,'Neutronics','Power_and_Rho'), exist_ok=True)
+        os.makedirs(os.path.join(self.plotdir,'metadata','Power_and_Rho'), exist_ok=True)
 
         """
         Treatment for the neutronics and power
@@ -238,12 +229,12 @@ class H5Processor(object):
                 ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
 
                 plt.title(f'Power vs Reactivity | {self.names[idx]}')
-                filepath = os.path.join(self.plotdir, 'Neutronics', 'Power_and_Rho' , f'{self.names[idx]}_rho_and_power.png')
+                filepath = os.path.join(self.plotdir, 'metadata', 'Power_and_Rho' , f'{self.names[idx]}_rho_and_power.png')
                 self.style(filepath)
 
         if self.multisim is True:
             self.plot_power_comparison()
-            self.plot_difference_rho()
+            self.plot_power_difference()
     
     def plot_power_comparison(self):
             
@@ -269,82 +260,6 @@ class H5Processor(object):
         filepath = os.path.join(self.plotdir, 'Neutronics', 'power_comparison.png')
         self.style(filepath)
 
-    def plot_zetas(self):
-
-        """
-        Goes through the h5/neutronics/zetas table
-        and plots results on a single graph. One graph
-        per simulation passed.
-
-        """
-
-        os.makedirs(os.path.join(self.plotdir,'Neutronics','Zetas'), exist_ok=True)
-
-        for infile in self.infilelist:
-            x = self.infilelist.index(infile)
-            with h5py.File(infile) as f:
-                zetas = f['neutronics']['zetas']
-                zdata = zetas['zeta'][:]
-                z_idx = zetas['zeta_idx'][:]
-                t_idx = zetas['t_idx'][:]
-
-                sim_info = f['metadata']['sim_info']
-                t0 = sim_info['t0'][()]
-                tf = sim_info['tf'][()]
-                n_steps = len(np.unique(t_idx))
-                time_arr = np.linspace(t0, tf, n_steps)
-                time_map = {idx: time_arr[i] for i, idx in enumerate(sorted(np.unique(t_idx)))}
-                t_sec = np.array([time_map[idx] for idx in t_idx])
-
-                plt.figure()
-                unique_zeta_idx = np.unique(z_idx)
-                for group in unique_zeta_idx:
-                    mask = (z_idx == group)
-                    plt.plot(t_sec[mask], zdata[mask], label=f'Group {group}')
-                plt.ylabel(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
-                plt.xlabel("Time [s]")
-                plt.title(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
-                path = os.path.join(self.plotdir, 'Neutronics', 'Zetas', f'zetas_{self.names[x]}.png')
-                self.style(path)
-
-    def plot_omegas(self):
-
-        """
-        Goes through the h5/neutronics/omega table
-        and plots data on a single graph. One graph
-        per simulation passed.
-
-        """
-
-        os.makedirs(os.path.join(self.plotdir,'Neutronics','Omegas'), exist_ok=True)
-
-        for infile in self.infilelist:
-            x = self.infilelist.index(infile)
-            with h5py.File(infile) as f:
-                omegas = f['neutronics']['omegas']
-                odata = omegas['omega'][:]
-                o_idx = omegas['omega_idx'][:]
-                t_idx = omegas['t_idx'][:]
-
-                sim_info = f['metadata']['sim_info']
-                t0 = sim_info['t0'][()]
-                tf = sim_info['tf'][()]
-                n_steps = len(np.unique(t_idx))
-                time_arr = np.linspace(t0, tf, n_steps)
-                time_map = {idx: time_arr[i] for i, idx in enumerate(sorted(np.unique(t_idx)))}
-                t_sec = np.array([time_map[idx] for idx in t_idx])
-                
-                unique_omega_idx = np.unique(o_idx)
-                plt.figure()
-                for group in unique_omega_idx:
-                    mask = (o_idx == group)
-                    plt.plot(t_sec[mask], odata[mask], label=f'Group {group}')
-                plt.ylabel(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
-                plt.title(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
-                path = os.path.join(self.plotdir, 'Neutronics', 'Omegas', f'omegas_{self.names[x]}.png')
-                self.style(path)
-
-
     def power_total(self, infile):
         """Finds and returns the total power of the simulation.
 
@@ -359,7 +274,7 @@ class H5Processor(object):
                     return float(power_tot)
         return 1.0
     
-    def plot_difference_rho(self):
+    def plot_power_difference(self):
         
         """Plots the absolute difference between power for 
         multiple simulations.
@@ -411,19 +326,82 @@ class H5Processor(object):
             print(f"Saved {path}")
 
 
-    def h5plot(self):
+    def plot_zetas(self):
+        
+        """
+        Goes through the h5/neutronics/zetas table
+        and plots results on a single graph. One graph
+        per simulation passed.
 
-        self.plot_thcomponent()
-        self.plot_power_rho()
-        self.plot_zetas()
-        self.plot_omegas()
+        """
 
-    def style(self, path):
-        if self.multisim is True:
-            plt.legend()
-        plt.grid(True)
-        plt.xlabel(r'Time $[s]$')
-        plt.tight_layout()
-        plt.savefig(path, dpi=300, format='png')
-        plt.close()
-        print(f"Saved {path}")
+        os.makedirs(os.path.join(self.plotdir,'Neutronics','Zetas'), exist_ok=True)
+
+        for infile in self.infilelist:
+            x = self.infilelist.index(infile)
+            with h5py.File(infile) as f:
+                n_pg = int(f['metadata']['sim_info']['n_pg'])
+
+                if n_pg == 0:
+                    break
+
+                zetas = f['neutronics']['zetas']
+                t_idx = zetas['t_idx'][:]
+
+                sim_info = f['metadata']['sim_info']
+                t0 = sim_info['t0'][()]
+                tf = sim_info['tf'][()]
+                n_steps = len(t_idx)
+                time_arr = np.linspace(t0, tf, n_steps)
+
+                plt.figure()
+                for i in range(1,1+n_pg):
+                    plt.plot(time_arr,
+                             zetas[f'zeta_{i}'],
+                             label=f"Group {i}")
+
+                plt.ylabel(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
+                plt.xlabel("Time [s]")
+                plt.title(r"Concentration of Neutron Precursors, $\zeta_i [\#/dr^3]$")
+                path = os.path.join(self.plotdir, 'Neutronics', 'Zetas', f'zetas_{self.names[x]}.png')
+                plt.legend()
+                self.style(path)
+                plt.close
+
+
+    def plot_omegas(self):
+            
+            """
+            Goes through the h5/th/omegas table
+            and plots results on a single graph. One graph
+            per simulation passed.
+            """
+
+            os.makedirs(os.path.join(self.plotdir,'Components','Omegas'), exist_ok=True)
+
+            for infile in self.infilelist:
+                x = self.infilelist.index(infile)
+                with h5py.File(infile) as f:
+                    n_dg = int(f['metadata']['sim_info']['n_dg'])
+                    if n_dg == 0:
+                        break
+
+                    omegas = f['th']['omegas']
+                    t_idx = omegas['t_idx'][:]
+
+                    sim_info = f['metadata']['sim_info']
+                    t0 = sim_info['t0'][()]
+                    tf = sim_info['tf'][()]
+                    n_steps = len(t_idx)
+                    time_arr = np.linspace(t0, tf, n_steps)
+
+                    plt.figure()
+                    for i in range(1,1+n_dg):
+                        plt.plot(time_arr,omegas[f'omega_{i}'],label=f"Group {i}")
+
+                    plt.ylabel(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
+                    plt.title(r'Decay Heat Fractions, $\omega_i [\#/dr^3]$')
+                    path = os.path.join(self.plotdir, 'Components', 'Omegas', f'omegas_{self.names[x]}.png')
+                    plt.legend()
+                    self.style(path)
+                    plt.close

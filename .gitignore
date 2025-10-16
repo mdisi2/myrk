@@ -33,6 +33,7 @@ matplotlibrc
 
 *.pdf
 *.eps
+*.png
 
 .DS_Store
 
