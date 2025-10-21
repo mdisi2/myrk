@@ -28,7 +28,8 @@ class ViscosityModel(object):
 
         self.implemented = {'constant': self.constant,
                             'exponential': self.exponential,
-                            'sodium':self.sodium}
+                            'sodium':self.sodium,
+                            'helium':self.helium}
 
         if model in self.implemented.keys():
             self.model = model
@@ -95,3 +96,18 @@ class ViscosityModel(object):
         T = temp.to(units.kelvin).magnitude
         ret = exp(-6.4406) * T**(- 0.3958) * exp(556.835/T)
         return  ret * units.pascal * units.second
+    
+
+    def helium(self, T=0.0 * units.kelvin):
+        """
+        Returns dynamic viscosity using an linear function
+
+
+        https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf
+        """
+
+        a = 3.3717e-08 * units.pascal * units.second / units.kelvin
+        b = 1.23625e-5 * units.pascal * units.second
+
+        ret = a * T + b
+        return ret

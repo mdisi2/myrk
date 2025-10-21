@@ -36,7 +36,8 @@ class ConductivityModel(object):
 
         self.implemented = {'constant': self.constant,
                             'linear': self.linear,
-                            'sodium': self.sodium}
+                            'sodium': self.sodium,
+                            'helium': self.helium}
 
         if model in self.implemented.keys():
             self.model = model
@@ -101,3 +102,20 @@ class ConductivityModel(object):
         ret = A + B*T+ C*(T**2) + D*(T**3)
 
         return ret * units.watt / units.meter / units.kelvin
+    
+    def helium(self,T=0*units.kelvin):
+        """linear fit for helium thermal conductivity
+        
+            0.000261 * T + 0.10144
+        
+        Valid for 600-1200 K
+
+        https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf
+
+        """
+
+        a = 0.000261
+        b = 0.10144
+
+        ret = a * T + b
+        return ret * (units.watt / units.kelvin / units.meter)

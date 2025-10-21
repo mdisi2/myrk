@@ -26,7 +26,8 @@ class DensityModel(object):
         self.b = b.to(units.kg / units.kelvin / pow(units.meter, 3))
 
         self.implemented = {'constant': self.constant,
-                            'linear': self.linear}
+                            'linear': self.linear,
+                            'helium': self.helium_dens}
 
         if model in self.implemented.keys():
             self.model = model
@@ -66,3 +67,23 @@ class DensityModel(object):
         """
         ret = self.a + self.b * temp
         return ret
+    
+
+    def helium_dens(self,temp=0.0 * units.kelvin):
+        """
+        Returns the 2nd order polynomial fit for helium-4 density at 
+        6 MPa
+
+        https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf  
+        
+        Valid in range 600-1200 [K]
+
+        """
+
+        T = temp.magnitude
+        a = 4.35833333e-06
+        b = -1.16810714e-02
+        c = 1.01620952e+01
+
+        ret = a*T**2 + b*T + c
+        return ret * units.kg /  pow(units.meter, 3)
