@@ -1,5 +1,5 @@
 from pyrk.utilities.ur import units
-from pyrk.th import THComponent
+from pyrk.th_component import THComponent
 from pyrk.density_model import DensityModel
 
 
