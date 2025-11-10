@@ -19,7 +19,7 @@ class ConvectiveModel(object):
 
         :param h0: convective heat transfer coefficient when it's a constant
         :type h0: double
-        :param mat: material of the fluid
+        :param mat: fluid material
         :type mat: Material object
         :param m_flow: mass flow rate
         :type m_flow: double

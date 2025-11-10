@@ -21,28 +21,31 @@ IPyC_r = 40 * units.micrometer
 SiC_r = 57 * units.micrometer
 OPyC_r = 35 * units.micrometer
 
-def vol(r):
+def vol_sphere(r):
     return (4/3) * pi * (r**3)
 
-def area(r):
+def surface_area(r):
     return 4 * pi * (r**2)
 
+def vol_shell(r_inner,r_outer):
+    return (4/3) * pi * (r_outer**2 - r_inner**2)
+
 O_PyC = Material(name='outer pyrolitic carbon',
-                 cp=  755 * units.joules / units.kg /units.kevlin,
+                 cp=  755 * units.joules / units.kg /units.kelvin,
                  dm = DensityModel(model='constant',
                                  a=1700 * units.kg / (units.meter)**3),
                  k =  ConductivityModel(model='constant',
                                       a=8.6 * units.watt / units.meter / units.kelvin))
 
 I_PyC = Material(name='inner pyrolitic carbon',
-                 cp=  755 * units.joules / units.kg /units.kevlin,
+                 cp=  755 * units.joules / units.kg /units.kelvin,
                  dm = DensityModel(model='constant',
                                  a=1700 * units.kg / (units.meter)**3),
                  k =  ConductivityModel(model='constant',
                                       a=11.0 * units.watt / units.meter / units.kelvin))
 
 Sc = Material(name='silicon carbide',
-              cp=  648 * units.joules / units.kg /units.kevlin,
+              cp=  648 * units.joules / units.kg /units.kelvin,
               dm = DensityModel(model='constant',
                                  a=3200 * units.kg / (units.meter)**3),
               k =  ConductivityModel(model='constant',
@@ -55,11 +58,18 @@ Cb = Material(name='carbon buffer',
               k =  ConductivityModel(model='constant',
                                     a=10.5 * units.watt / units.meter / units.kelvin))
 
-kernel = Material(name='fuel kernel',
+Kernel = Material(name='fuel kernel',
                   cp= 330 * units.joules / units.kg / units.kelvin,
                   k = ConductivityModel(model='uoc_uo2_kernel'),
                   dm = DensityModel(mode='constant',
                                     a = 11.0 * units.gram / (units.meter**3)))
 
+
+Comp_O_PyC = th.THComponent(name="outer pyrolitic carbon",
+                      mat=O_PyC,
+                      vol=,
+                      T0=t_core,
+                      alpha_temp=,
+                      timer=)
 
 class Triso_X(th_component):
