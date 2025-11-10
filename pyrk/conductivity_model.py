@@ -119,7 +119,7 @@ class ConductivityModel(object):
         a = 0.000261
         b = 0.10144
 
-        ret = a * T + b
+        ret = a * T.magnitude + b
         return ret * (units.watt / units.kelvin / units.meter)
     
     def uoc_uo2_kernel(self,T=0*units.kelvin):
@@ -134,11 +134,12 @@ class ConductivityModel(object):
         """
 
         temp_c = T.to('degC')
-        if temp_c < 1650:
+        if temp_c.magnitude < 1650:
             t_c = temp_c.magnitude
             ret = 0.0132 * exp(0.00188 * t_c) + (4040/(464+t_c))
             return ret * units.watts / units.kelvin / units.meter
-        if temp_c >= 1650:
+        
+        if temp_c.magnitude >= 1650:
             t_c = temp_c.magnitude
             ret = 0.0132 * exp(0.00188*t_c) + 1.9
             return ret * units.watts / units.kelvin / units.meter
