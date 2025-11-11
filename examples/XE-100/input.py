@@ -114,7 +114,7 @@ a_sc = area_sphere(r_buffer) * n_pebbles
 a_sic = area_sphere(r_sic) * n_pebbles
 a_ipyc = area_sphere(r_ipyc) * n_pebbles
 a_opyc = area_sphere(r_opyc) * n_pebbles
-a_pebble = a_opyc
+a_pebble = area_sphere(3*units.cm) * n_pebbles
 
 # https://www.sciencedirect.com/science/article/pii/S0955221924000244
 # https://www.sciencedirect.com/science/article/pii/S2352179123001400
@@ -159,9 +159,11 @@ Fuel = Material(name='fuel',
                   cp= 330 * units.joules / units.kg / units.kelvin,
                   k = ConductivityModel(model='uoc_uo2_kernel'),
                   dm = DensityModel(model='constant',
-                                    a = 11.0 * units.gram / (units.meter**3)))
+                                    a = 11.0 * units.gram / (units.cm**3)))
 
 Refl = Graphite()
+
+Triso_shell = Graphite()
 
 
 Comp_Cool = th.THComponent(name='helium',
@@ -243,19 +245,27 @@ rho_ext = StepReactivityInsertion(timer=ti, t_step=1.0 * units.seconds,
 
 # The fuel conducts to the Carbon Buffer
 Comp_Fuel.add_conduction('carbon buffer', area=a_fuel,
-                           r_env=r_fuel)
+                           #r_b = 0 * units.meter, 
+                           #r_env=r_fuel,
+                           L=r_fuel)
 
 # The Carbon Buffer conducts to the Silicon Carbide
 Comp_C_B.add_conduction('silicon carbide', area=a_buffer,
-                        r_env=r_buffer)
+                        #r_b = r_fuel,
+                        #r_env=r_buffer,
+                        L=r_buffer)
 
 # The Silicon Carbide conducts to the Inner Pyrolitic Carbon
 Comp_Sc.add_conduction('inner pyrolitic carbon', area=a_sic,
-                       r_env=r_sic)
+                       #r_b = r_buffer,
+                       #r_env=r_sic,
+                       L=r_sic)
 
 #The Inner Pyrolitic Carbon conducts to the Outer Pyrolitic Carbon
 Comp_I_PyC.add_conduction('outer pyrolitic carbon', area = a_ipyc,
-                          r_env = r_ipyc)
+                          #r_b = r_sic,
+                          #r_env = r_ipyc,
+                          L=r_ipyc)
 
 #The Outer Pyrolitic Carbon convects with the coolant
 Comp_O_PyC.add_convection('helium', area = a_opyc, h=h_triso)

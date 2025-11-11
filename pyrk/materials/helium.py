@@ -20,7 +20,8 @@ class Helium(LiquidMaterial):
                                 name=name,
                                 k=self.thermal_conductivity(),
                                 cp=self.specific_heat_capacity(),
-                                dm=self.density())
+                                dm=self.density(),
+                                mu=self.dynamic_viscosity())
 
     def thermal_conductivity(self):
         """helium thermal conductivity in [W/m-K]
@@ -39,9 +40,9 @@ class Helium(LiquidMaterial):
         """
         return DensityModel(model="helium")
     
-    def dynamic_viscosiy(self):
+    def dynamic_viscosity(self):
         """
-        FLiBE dynamic viscosity as a function of T. [Pa * s]
+        Helium dynamic viscosity as a function of T. [Pa * s]
         """
         return ViscosityModel(model='helium')
     
