@@ -159,7 +159,7 @@ Fuel = Material(name='fuel',
                   cp= 330 * units.joules / units.kg / units.kelvin,
                   k = ConductivityModel(model='uoc_uo2_kernel'),
                   dm = DensityModel(model='constant',
-                                    a = 11.0 * units.gram / (units.cm**3)))
+                                    a = 1100 * units.kg / (units.cm**3)))
 
 Refl = Graphite()
 

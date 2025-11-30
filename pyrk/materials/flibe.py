@@ -33,7 +33,8 @@ class Flibe(LiquidMaterial):
                                 name=name,
                                 k=self.thermal_conductivity(),
                                 cp=self.specific_heat_capacity(),
-                                dm=self.density())
+                                dm=self.density(),
+                                mu=self.dynamic_viscosity())
 
     def thermal_conductivity(self):
         """FLiBe thermal conductivity in [W/m-K]
@@ -57,7 +58,7 @@ class Flibe(LiquidMaterial):
                             (units.meter**3) / units.kelvin,
                             model="linear")
     
-    def dynamic_viscosiy(self):
+    def dynamic_viscosity(self):
         """
         FLiBE dynamic viscosity as a function of T. [Pa * s]
         """

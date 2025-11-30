@@ -13,6 +13,7 @@ class ConvectiveModel(object):
                  m_flow=None,
                  a_flow=None,
                  length_scale=None,
+                 porosity=None,
                  model="constant"):
         """
         Initializes the DensityModel object.
@@ -40,6 +41,7 @@ class ConvectiveModel(object):
         self.m_flow = m_flow
         self.a_flow = a_flow
         self.length_scale = length_scale
+        #self.porosity = porosity
 
         self.implemented = {'constant': self.constant,
                             'wakao': self.wakao}
@@ -80,23 +82,17 @@ class ConvectiveModel(object):
         """
         return self.h0
 
-    def wakao(self,rho,mu,k):
+    def wakao(self, rho, mu, k):
         """
         This function implements the Wakao correlation for convective heat
         transfer coefficient
-
-        :param rho: The density of the coolant
+        :param rho: The density of the object
         :type rho: float
-        :param mu: The dynamic viscosity of the coolant
+        :param mu: The dynamic viscosity of the object
         :type mu: float
-        :param k: The thermal conductivity of the coolant
-        :type k: float
         """
-
-        u = self.m_flow / (self.a_flow * rho)
-
+        u = self.m_flow / self.a_flow / rho
         Re = rho * self.length_scale * u / mu
-
         Pr = self.cp * mu / k
         Nu = 2 + 1.1 * Pr.magnitude ** (1 / 3.0) * Re.magnitude**0.6
         ret = Nu * k / self.length_scale

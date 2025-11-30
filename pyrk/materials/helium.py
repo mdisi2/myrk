@@ -44,7 +44,8 @@ class Helium(LiquidMaterial):
         """
         Helium dynamic viscosity as a function of T. [Pa * s]
         """
-        return ViscosityModel(model='helium')
+        return ViscosityModel(model='constant',
+                              a = 4.25e-5 * units.Pa * units.second)
     
     #TODO pressure 
     #def pressure(self):

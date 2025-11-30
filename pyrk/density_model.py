@@ -80,10 +80,10 @@ class DensityModel(object):
 
         """
 
-        T = temp.magnitude
-        a = 4.35833333e-06
-        b = -1.16810714e-02
-        c = 1.01620952e+01
+        T = temp.to('kelvin')
+        a = 4.35833333e-06 * (units.kg / units.meter**3 / units.kelvin**2)
+        b = -1.16810714e-02 *  (units.kg / units.meter**3 / units.kelvin)
+        c = 1.01620952e+01 *  (units.kg / units.meter**3)
 
         ret = a*T**2 + b*T + c
-        return ret * units.kg /  pow(units.meter, 3)
+        return ret

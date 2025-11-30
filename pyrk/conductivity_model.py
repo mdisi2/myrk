@@ -38,8 +38,8 @@ class ConductivityModel(object):
         self.implemented = {'constant': self.constant,
                             'linear': self.linear,
                             'sodium': self.sodium,
-                            'helium': self.helium,
-                            'uoc_uo2_kernel' : self.uoc_uo2_kernel}
+                            'helium': self.helium } 
+                            #'uoc_uo2_kernel' : self.uoc_uo2_kernel}
 
         if model in self.implemented.keys():
             self.model = model
@@ -116,30 +116,31 @@ class ConductivityModel(object):
 
         """
 
-        a = 0.000261
-        b = 0.10144
+        T = T.to('kelvin')
+        a = 0.000261 * (units.watt / units.kelvin**2 / units.meter)
+        b = 0.10144 * (units.watt / units.kelvin / units.meter)
 
-        ret = a * T.magnitude + b
-        return ret * (units.watt / units.kelvin / units.meter)
+        ret = a * T + b
+        return ret
     
-    def uoc_uo2_kernel(self,T=0*units.kelvin):
-        """
-        Returns thermal conductivity of a TRISO UCO/UO2 particle.
+    # def uoc_uo2_kernel(self,T=0*units.kelvin):
+    #     """
+    #     Returns thermal conductivity of a TRISO UCO/UO2 particle.
 
-        Returns in units W/(K * m)
+    #     Returns in units W/(K * m)
 
-        T is in celcius
+    #     T is in celcius
 
-        Taken from https://art.inl.gov/ReportsFolder/MaterialPropertiesReport.pdf Section 5.2 
-        """
+    #     Taken from https://art.inl.gov/ReportsFolder/MaterialPropertiesReport.pdf Section 5.2 
+    #     """
 
-        temp_c = T.to('degC')
-        if temp_c.magnitude < 1650:
-            t_c = temp_c.magnitude
-            ret = 0.0132 * exp(0.00188 * t_c) + (4040/(464+t_c))
-            return ret * units.watts / units.kelvin / units.meter
+    #     temp_c = T.to('degC')
+    #     if temp_c.magnitude < 1650:
+    #         t_c = temp_c.magnitude
+    #         ret = 0.0132 * exp(0.00188 * t_c) + (4040/(464+t_c))
+    #         return ret * units.watts / units.kelvin / units.meter
         
-        if temp_c.magnitude >= 1650:
-            t_c = temp_c.magnitude
-            ret = 0.0132 * exp(0.00188*t_c) + 1.9
-            return ret * units.watts / units.kelvin / units.meter
+    #     if temp_c.magnitude >= 1650:
+    #         t_c = temp_c.magnitude
+    #         ret = 0.0132 * exp(0.00188*t_c) + 1.9
+    #         return ret * units.watts / units.kelvin / units.meter

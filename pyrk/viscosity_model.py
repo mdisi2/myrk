@@ -109,5 +109,13 @@ class ViscosityModel(object):
         a = 3.3717e-08 * units.pascal * units.second / units.kelvin
         b = 1.23625e-5 * units.pascal * units.second
 
-        ret = a * T + b
+        temp = T.to(units.kelvin)
+
+        if temp.magnitude <= 0:
+            ret = b
+            print(f'WARNING: Computed viscosity is non-positive: {temp}')
+        
+        else:
+            ret = a * temp + b
+            
         return ret
