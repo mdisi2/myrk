@@ -71,7 +71,7 @@ def Test_Convection():
     h_pebble = ConvectiveModel(
         mat=H,
         m_flow=m_flow,
-        a_flow=a_flow,
+        a_flow=a_flow*0.4,
         length_scale=d_pebble,
         model='wakao')
     
