@@ -5,7 +5,12 @@ from pyrk.materials.liquid_material import LiquidMaterial
 from pyrk.viscosity_model import ViscosityModel
 
 class Helium(LiquidMaterial):
-    """https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf
+    """
+    Helium class, values and models are intended for 6Mpa because 
+    this is the operating pressure of the Xe-100 - which this class
+    is intended for.
+    
+    https://nvlpubs.nist.gov/nistpubs/Legacy/TN/nbstechnicalnote1334.pdf
     
     https://x-energy.com/reactors/xe-100
     """
@@ -31,7 +36,7 @@ class Helium(LiquidMaterial):
     def specific_heat_capacity(self):
         """Specific heat capacity of helium [J/kg/K]
         """
-        return 5.190 * units.joule / (units.kg * units.kelvin)
+        return 5.190e3 * units.joule / (units.kg * units.kelvin)
 
     def density(self):
         """
@@ -44,8 +49,10 @@ class Helium(LiquidMaterial):
         """
         Helium dynamic viscosity as a function of T. [Pa * s]
         """
-        return ViscosityModel(model='constant',
-                              a = 4.25e-5 * units.Pa * units.second)
+        # return ViscosityModel(model='constant',
+        #                       a = 4.25e-5 * units.Pa * units.second)
+    
+        return ViscosityModel(model='helium')
     
     #TODO pressure 
     #def pressure(self):

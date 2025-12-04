@@ -39,7 +39,6 @@ class ConductivityModel(object):
                             'linear': self.linear,
                             'sodium': self.sodium,
                             'helium': self.helium } 
-                            #'uoc_uo2_kernel' : self.uoc_uo2_kernel}
 
         if model in self.implemented.keys():
             self.model = model

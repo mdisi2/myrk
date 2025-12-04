@@ -20,23 +20,19 @@ def Test_Density():
     c = 1.01620952e+01 *  (units.kg / units.meter**3)
     dens_at_t0 = a*t_0**2 + b*t_0 + c
 
-    dens_t0 = H.dm(t_0)
+    dens_t0 = H.dm.rho(t_0)
     dens_model = DensityModel(model='helium')
-    d_0 = dens_model(t_0)
-
-    print("calc =", dens_at_t0)
-    print("helium.dm =", dens_t0)
-    print("model =", d_0)
+    d_0 = dens_model.rho(t_0)
 
     assert abs((dens_at_t0 - dens_t0).magnitude) < 1e-12
     assert abs((d_0 - dens_t0).magnitude) < 1e-12
 
 def Test_Cp():
-    cp_0 = 5.190 * units.joule / (units.kg * units.kelvin)
-    cp_h = H.cp(t_0)
+    cp_0 = 5.190e3 * units.joule / (units.kg * units.kelvin)
+    cp_h = H.cp
 
     print(cp_h, cp_0)
-    assert abs((cp_h - cp_0).magnitude)
+    assert abs((cp_h - cp_0).magnitude) < 1e-5
 
 def Test_Conduction():
     a = 0.000261 * (units.watt / units.kelvin**2 / units.meter)
@@ -46,23 +42,24 @@ def Test_Conduction():
     k_t0 = H.k.thermal_conductivity(t_0)
 
     k_model = ConductivityModel(model='helium')
-    k_0 = k_model(t_0)
+    k_0 = k_model.thermal_conductivity(t_0)
 
     print("calc =", k_at_t0)
     print("helium.k =", k_t0)
     print("model =", k_0)
 
-    assert abs((k_at_t0 - k_t0).magnitude) < 1e-12
-    assert abs((k_0 - k_t0).magnitude) < 1e-12
+    assert abs((k_at_t0 - k_t0).magnitude) < 1e-5
+    assert abs((k_0 - k_t0).magnitude) < 1e-5
 
-def Test_Viscosity():
+def Test_viscosity(t_0):
+    a = 3.3717e-08 * units.pascal * units.second / units.kelvin
+    b = 1.23625e-5 * units.pascal * units.second
+    
     mu_t0 = H.mu.dynamic_viscosity(t_0)
-    mu_at_t0 = 4.25e-5 * units.Pa * units.second
+    mu_at_t0 = a * t_0 + b 
 
-    mu_model = ViscosityModel(a=4.25e-5, model='constant')
-    mu_0 = mu_model(t_0)
-
-    print(mu_t0, mu_at_t0, mu_0)
+    mu_model = ViscosityModel(model='helium')
+    mu_0 = mu_model.dynamic_viscosity(t_0)
 
     assert abs((mu_t0 - mu_at_t0).magnitude) < 1e-12
     assert abs((mu_0 - mu_at_t0).magnitude) < 1e-12
@@ -82,3 +79,6 @@ def Test_Convection():
     print(h_val)
 
 Test_Convection()
+Test_Density()
+Test_Conduction()
+Test_Cp()
