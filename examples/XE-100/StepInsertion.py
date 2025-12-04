@@ -10,6 +10,7 @@ from pyrk.materials.helium import Helium
 from pyrk.materials.graphite import Graphite
 from pyrk.timer import Timer
 from pyrk.materials.kernel import Kernel
+from pyrk.reactivity_insertion import StepReactivityInsertion
 
 #############################################
 #
@@ -56,7 +57,7 @@ alpha_r = 1.8 * units.pcm / units.kelvin
 alpha_total = -3.6 * units.pcm / units.kelvin
 
 # Temperature
-t_fuel = (1300 + 273.15) * units.kelvin
+t_fuel = (1000 + 273.15) * units.kelvin
 t_cool = (775 + 273.15) * units.kelvin
 t_refl = (623.15) * units.kelvin
 t_mod = (750 + 273.15) * units.kelvin
@@ -67,7 +68,7 @@ t_inlet = 533.15 * units.kelvin
 m_flow = 78.6 * units.kg / units.second
 thickness_fuel_matrix = 0.005 * units.meter
 
-kappa = 0.00 #fix omegas or something
+kappa = 0.00 #fix omegas
 core_height = 8.93 * units.meter
 core_inner_radius = 1.20 * units.meter
 reflector_thickness = 0.90 * units.meter
@@ -151,22 +152,21 @@ h_refl = ConvectiveModel(h0= 400 * units.watt /
 
 # Fuel / Graphite blob conduction
 Comp_Fuel.add_conduction('mod', area=a_fuel_region,
-                            L=5 * units.millimeter)
+                            L=5*units.millimeter)
 Comp_mod.add_conduction('fuel', area=a_fuel_region,
-                         L = 5*units.millimeter)
+                         L=5*units.millimeter)
 
 # graphite bloob / Coolant Convection
-Comp_mod.add_convection('cool', h=h_cool_c, area=a_pebble)
-Comp_Cool.add_convection('mod', h=h_cool_c, area=a_pebble)
+Comp_mod.add_convection('cool', h=h_cool, area=a_pebble)
+Comp_Cool.add_convection('mod', h=h_cool, area=a_pebble)
 
 # Coolant / Reflector Convection
-Comp_Cool.add_convection('refl', h=h_cool_c, area=a_refl)
-Comp_Refl.add_convection('cool', h=h_cool_c, area=a_refl)
+Comp_Cool.add_convection('refl', h=h_cool, area=a_refl)
+Comp_Refl.add_convection('cool', h=h_cool, area=a_refl)
 
 
 # External Reactivity Insetion
-from pyrk.reactivity_insertion import StepReactivityInsertion
 rho_ext = StepReactivityInsertion(timer=ti,
-                                  t_step=0.0 * units.seconds,
+                                  t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
-                                  rho_final=0.000 * units.delta_k)
+                                  rho_final=0.005 * units.delta_k)
