@@ -56,7 +56,7 @@ alpha_r = 1.8 * units.pcm / units.kelvin
 alpha_total = -3.6 * units.pcm / units.kelvin
 
 # Temperature
-t_fuel = (873 + 273.15) * units.kelvin
+t_fuel = (1300 + 273.15) * units.kelvin
 t_cool = (775 + 273.15) * units.kelvin
 t_refl = (623.15) * units.kelvin
 t_mod = (750 + 273.15) * units.kelvin
@@ -108,7 +108,7 @@ Comp_Fuel = th.THComponent(name="fuel",
                       mat=Fuel,
                       vol=vol_fuel_kernel,
                       T0=t_fuel,
-                      alpha_temp=alpha_total,
+                      alpha_temp=alpha_f,
                       timer=ti,
                       heatgen=True,
                       power_tot=power_tot)
@@ -117,21 +117,21 @@ Comp_mod = th.THComponent(name='mod',
                            mat=Pebble_graph,
                            vol=vol_all_pebbles,
                            T0=t_pebble,
-                           alpha_temp=alpha_total,
+                           alpha_temp=alpha_m,
                            timer=ti)
 
 Comp_Refl = th.THComponent(name='refl',
                            mat=Refl,
                            vol= vol_refl,
                            T0=t_refl,
-                           alpha_temp=alpha_total,
+                           alpha_temp=alpha_r,
                            timer=ti)
 
 Comp_Cool = th.THComponent(name='cool',
                            mat=Cool,
                            vol= vol_cool,
                            T0 = t_cool,
-                           alpha_temp = alpha_total,
+                           alpha_temp = 0 * units.pcm / units.kelvin,
                            timer = ti)
 
 components = [Comp_Cool,Comp_Refl,Comp_mod,Comp_Fuel]
