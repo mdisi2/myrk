@@ -57,7 +57,8 @@ class H5Processor(object):
     def h5plot(self):
 
         self.plot_thcomponent()
-        self.plot_power_rho()
+        self.plot_power()
+        self.plot_rho()
         self.plot_zetas()
         self.plot_omegas()
 
@@ -77,7 +78,7 @@ class H5Processor(object):
                 "#44AA99", "#88CCEE", 
                 "#DDCC77", "#CC6677", 
                 "#AA4499", "#882255"]
-        return colors[n]
+        return colors[n % len(colors)]
 
     def plot_thcomponent(self):
 
@@ -123,7 +124,7 @@ class H5Processor(object):
             for i, data_dict in enumerate(all_sims):
                 components, time_arr = time_arrays[i]
                 mask = (components == c.encode('utf-8'))
-                plt.plot(time_arr[mask], data_dict[c], label=f"{self.names[i]}")
+                plt.plot(time_arr[mask], data_dict[c], label=f"{self.names[i]}",color=self.color(i))
             plt.ylabel("Temperature [K]")
             plt.title(f"{c.capitalize()} Temperature")
             path = os.path.join(self.plotdir, 'Components', f"{c.capitalize()}.png")
@@ -192,7 +193,7 @@ class H5Processor(object):
                     path = os.path.join(self.plotdir, 'Difference', f"{c.capitalize()}_difference_{self.names[i]}_{self.names[j]}.png")
                     self.style(path)
 
-    def plot_power_rho(self):
+    def plot_rho(self):
 
         os.makedirs(os.path.join(self.plotdir,'metadata','Power_and_Rho'), exist_ok=True)
 
@@ -210,26 +211,40 @@ class H5Processor(object):
                 t = f['metadata']['sim_info']
                 t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
 
+                plt.plot(t_arr, n['rho_ext'], label='External Reactivity', color="#AA4499")
+                plt.plot(t_arr, n['rho_tot'], label='Total Reactivity', color="#882255")
+                plt.ylabel(r'Reactivity $\rho$')
+                plt.tick_params(axis='y', color="#CC6677")
+                plt.legend()
+                plt.title(f'Power vs Reactivity {self.names[idx]}')
+                filepath = os.path.join(self.plotdir, 'metadata', 'Power_and_Rho' , f'{self.names[idx]}_reactivity.png')
+                self.style(filepath)
+
+    def plot_power(self):
+
+        os.makedirs(os.path.join(self.plotdir,'metadata','Power_and_Rho'), exist_ok=True)
+
+        """
+        Plots the power output to the metadata subdirectory of the plots directory.
+        """
+
+        for idx, infile in enumerate(self.infilelist):
+            with h5py.File(infile) as f:
+                n = f['neutronics']['neutronics_params']
+                m = f['metadata']['sim_timeseries']
+                t = f['metadata']['sim_info']
+                t_arr = np.linspace(t['t0'], t['tf'], len(n['t_idx']))
+
                 pt = self.power_total(infile)
 
-                fig,ax1 = plt.subplots()
-                ax1.plot(t_arr, pt * m['power'], label='Power', color="#332288")
-                ax1.set_xlabel('Time [s]')
-                ax1.set_ylabel('Power [watts]')
-                ax1.tick_params(axis='y', color="#332288")
+                plt.figure()
+                plt.plot(t_arr, pt * m['power'], label='Power', color="#332288")
+                plt.xlabel('Time [s]')
+                plt.ylabel('Power [watts]')
+                plt.tick_params(axis='y', color="#332288")
 
-                ax2 = ax1.twinx()
-                ax2.plot(t_arr, n['rho_ext'], label='External Reactivity', color="#AA4499")
-                ax2.plot(t_arr, n['rho_tot'], label='Total Reactivity', color="#882255")
-                ax2.set_ylabel(r'Reactivity $\rho$')
-                ax2.tick_params(axis='y', color="#CC6677")
-
-                lines1, labels1 = ax1.get_legend_handles_labels()
-                lines2, labels2 = ax2.get_legend_handles_labels()
-                ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
-
-                plt.title(f'Power vs Reactivity | {self.names[idx]}')
-                filepath = os.path.join(self.plotdir, 'metadata', 'Power_and_Rho' , f'{self.names[idx]}_rho_and_power.png')
+                plt.title(f'Power {self.names[idx]}')
+                filepath = os.path.join(self.plotdir, 'metadata', 'Power_and_Rho' , f'{self.names[idx]}_power.png')
                 self.style(filepath)
 
         if self.multisim is True:
@@ -315,7 +330,7 @@ class H5Processor(object):
                 plt.plot(time_arrays[i], diff, label=f"{self.names[i]} - {self.names[j]}")
 
             plt.ylabel(r"$\Delta$ Power [watts]")
-            plt.title(f"Power Differences | {self.names[i]} - {self.names[j]}")
+            plt.title(f"Power Differences {self.names[i]} - {self.names[j]}")
             plt.legend()
             plt.grid(True)
             plt.xlabel(r'Time $[s]$')
@@ -335,15 +350,15 @@ class H5Processor(object):
 
         """
 
-        os.makedirs(os.path.join(self.plotdir,'Neutronics','Zetas'), exist_ok=True)
-
         for infile in self.infilelist:
             x = self.infilelist.index(infile)
             with h5py.File(infile) as f:
                 n_pg = int(f['metadata']['sim_info']['n_pg'])
 
                 if n_pg == 0:
-                    break
+                    return None
+                
+                os.makedirs(os.path.join(self.plotdir,'Neutronics','Zetas'), exist_ok=True)
 
                 zetas = f['neutronics']['zetas']
                 t_idx = zetas['t_idx'][:]
@@ -377,14 +392,14 @@ class H5Processor(object):
             per simulation passed.
             """
 
-            os.makedirs(os.path.join(self.plotdir,'Components','Omegas'), exist_ok=True)
-
             for infile in self.infilelist:
                 x = self.infilelist.index(infile)
                 with h5py.File(infile) as f:
                     n_dg = int(f['metadata']['sim_info']['n_dg'])
                     if n_dg == 0:
-                        break
+                        return None
+                    
+                    os.makedirs(os.path.join(self.plotdir,'Components','Omegas'), exist_ok=True)
 
                     omegas = f['th']['omegas']
                     t_idx = omegas['t_idx'][:]
