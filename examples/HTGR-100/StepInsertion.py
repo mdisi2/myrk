@@ -37,7 +37,7 @@ power_tot = 200e6 * units.watt # 200 MW thermal output
 # Timer instance, based on t0, tf, dt
 t0 = 0.00 * units.seconds
 dt = 0.005 * units.seconds
-tf = 5.0 * units.seconds
+tf = 15.0 * units.seconds
 ti = Timer(t0=t0, tf=tf, dt=dt)
 
 n_pg = 6
@@ -47,8 +47,17 @@ n_dg = 0
 fission_iso = "u235"
 spectrum = "thermal"
 
-feedback = True
+feedback = False
 nsteps = 10000
+
+
+## start with feedbacks off and itterate until you get equilibrium temperatures
+
+## run new sim with temps at each component, make sure with feedbacks off it stays flat
+
+## turn on feedbacks, using temperatures, run 15 second and insert at 10 seconds
+
+## look into import dnp consentrations
 
 # Temperature feedbacks of reactivity
 alpha_f = -4.4 * units.pcm / units.kelvin
@@ -56,12 +65,17 @@ alpha_m = -1.0 * units.pcm / units.kelvin
 alpha_r = 1.8 * units.pcm / units.kelvin
 alpha_total = -3.6 * units.pcm / units.kelvin
 
+alpha_f = 0 * units.pcm / units.kelvin
+alpha_m = 0 * units.pcm / units.kelvin
+alpha_r = 0 * units.pcm / units.kelvin
+alpha_total = 0 * units.pcm / units.kelvin
+
 # Temperature
-t_fuel = (1000 + 273.15) * units.kelvin
-t_cool = (775 + 273.15) * units.kelvin
-t_refl = (623.15) * units.kelvin
-t_mod = (750 + 273.15) * units.kelvin
-t_pebble = (800 + 273.15) * units.kelvin
+t_fuel = (1650) * units.kelvin
+t_cool = (1180) * units.kelvin
+t_refl = (625) * units.kelvin
+t_mod = (1100) * units.kelvin
+
 t_outlet = (750 + 273.15) * units.kelvin
 t_inlet = 533.15 * units.kelvin
 
@@ -116,8 +130,8 @@ Comp_Fuel = th.THComponent(name="fuel",
 
 Comp_mod = th.THComponent(name='mod',
                            mat=Pebble_graph,
-                           vol=vol_all_pebbles,
-                           T0=t_pebble,
+                           vol=vol_peb_graphite,
+                           T0=t_mod,
                            alpha_temp=alpha_m,
                            timer=ti)
 
@@ -169,4 +183,4 @@ Comp_Refl.add_convection('cool', h=h_cool, area=a_refl)
 rho_ext = StepReactivityInsertion(timer=ti,
                                   t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
-                                  rho_final=0.005 * units.delta_k)
+                                  rho_final=0.0 * units.delta_k)
