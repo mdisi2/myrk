@@ -50,6 +50,8 @@ spectrum = "thermal"
 feedback = False
 nsteps = 10000
 
+#core in input.py is the smear region
+
 
 ## start with feedbacks off and itterate until you get equilibrium temperatures
 
@@ -64,6 +66,8 @@ alpha_f = -4.4 * units.pcm / units.kelvin
 alpha_m = -1.0 * units.pcm / units.kelvin
 alpha_r = 1.8 * units.pcm / units.kelvin
 alpha_total = -3.6 * units.pcm / units.kelvin
+# TODO alpha core
+alpha_c = 0.0 * units.pcm / units.kelvin
 
 alpha_f = 0 * units.pcm / units.kelvin
 alpha_m = 0 * units.pcm / units.kelvin
@@ -75,6 +79,7 @@ t_fuel = (1650) * units.kelvin
 t_cool = (1180) * units.kelvin
 t_refl = (625) * units.kelvin
 t_mod = (1100) * units.kelvin
+t_smear = (1100) * units.kelvin
 
 t_outlet = (750 + 273.15) * units.kelvin
 t_inlet = 533.15 * units.kelvin
@@ -106,11 +111,15 @@ vol_fuel_kernel = n_pebbles * n_particles_per_pebble \
     * vol_sphere(r_particle)
 vol_peb_graphite = vol_all_pebbles - vol_fuel_kernel
 
+vol_smear_region = vol_sphere(r_fuel_region) * n_pebbles
 
-a_pebble = n_pebbles * area_sphere(r_pebble)
+
+a_pebbles = n_pebbles * area_sphere(r_pebble)
 a_fuel_region = n_pebbles * area_sphere(r_fuel_region)
 a_refl = 2 * math.pi * core_outer_radius * core_height
 a_flow = (core_inner_radius**2) * math.pi * 0.4
+a_fuel = area_sphere(r_particle) * n_pebbles * n_particles_per_pebble
+a_smear = area_sphere(r_fuel_region) * n_pebbles
 
 ### Materials and THcomponents 
 
@@ -118,6 +127,13 @@ Refl = Graphite(name='refl')
 Cool = Helium(name='cool')
 Pebble_graph = Graphite(name='pebgraphite')
 Fuel = Kernel(name="fuelkernel")
+
+Smear = Material(name='smear',
+                 k=ConductivityModel(model='constant',
+                                     a =  0.26 * units.watt / units.meter / units.kelvin),
+                 rho=DensityModel(model='constant',
+                                  a =  1740 * units.kg / units.meter**3),
+                cp = 1650.0 * units.joule / units.kg / units.kelvin)
 
 Comp_Fuel = th.THComponent(name="fuel",
                       mat=Fuel,
@@ -128,7 +144,7 @@ Comp_Fuel = th.THComponent(name="fuel",
                       heatgen=True,
                       power_tot=power_tot)
 
-Comp_mod = th.THComponent(name='mod',
+Comp_Mod = th.THComponent(name='mod',
                            mat=Pebble_graph,
                            vol=vol_peb_graphite,
                            T0=t_mod,
@@ -149,7 +165,14 @@ Comp_Cool = th.THComponent(name='cool',
                            alpha_temp = 0 * units.pcm / units.kelvin,
                            timer = ti)
 
-components = [Comp_Cool,Comp_Refl,Comp_mod,Comp_Fuel]
+Comp_Smear = th.THComponent(name='smear',
+                            mat=Smear,
+                            vol= vol_smear_region,
+                            T0 = t_smear,
+                            alpha=alpha_total,
+                            timer=ti)
+
+components = [Comp_Cool,Comp_Refl,Comp_Mod,Comp_Fuel,Comp_Smear]
 
 h_cool = ConvectiveModel(
         mat=Cool,
@@ -164,19 +187,19 @@ h_refl = ConvectiveModel(h0= 400 * units.watt /
                          units.meter**2 / units.kelvin)
 
 
-# Fuel / Graphite blob conduction
-Comp_Fuel.add_conduction('mod', area=a_fuel_region,
-                            L=5*units.millimeter)
-Comp_mod.add_conduction('fuel', area=a_fuel_region,
-                         L=5*units.millimeter)
+# # Fuel / Graphite blob conduction
+# Comp_Fuel.add_conduction('mod', area=a_fuel_region,
+#                             L=5*units.millimeter)
+# Comp_Mod.add_conduction('fuel', area=a_fuel_region,
+#                         L=5*units.millimeter)
 
-# graphite bloob / Coolant Convection
-Comp_mod.add_convection('cool', h=h_cool, area=a_pebble)
-Comp_Cool.add_convection('mod', h=h_cool, area=a_pebble)
+# # graphite bloob / Coolant Convection
+# Comp_Mod.add_convection('cool', h=h_cool, area=a_pebbles)
+# Comp_Cool.add_convection('mod', h=h_cool, area=a_pebbles)
 
-# Coolant / Reflector Convection
-Comp_Cool.add_convection('refl', h=h_cool, area=a_refl)
-Comp_Refl.add_convection('cool', h=h_cool, area=a_refl)
+# # Coolant / Reflector Convection
+# Comp_Cool.add_convection('refl', h=h_cool, area=a_refl)
+# Comp_Refl.add_convection('cool', h=h_cool, area=a_refl)
 
 
 # External Reactivity Insetion
@@ -184,3 +207,23 @@ rho_ext = StepReactivityInsertion(timer=ti,
                                   t_step=1.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
                                   rho_final=0.0 * units.delta_k)
+
+
+# Fuel only conducts to the smear
+Comp_Fuel.add_conduction('smear', area=a_smear, L=5 * units.millimeter)
+
+# The moderator graphite conducts to the smear and convects to the coolant    
+Comp_Mod.add_conduction('smear', area=a_smear, L=25 * units.millimeter)
+Comp_Mod.add_convection('cool', h=h_cool, area=a_pebbles)
+
+# The smear conducts to the moderator graphite
+Comp_Smear.add_conduction('mod', area=a_smear, L=25 * units.centimeter)
+Comp_Smear.add_conduction('fuel', area=a_smear, L=5 * units.millimeter)
+
+
+# The coolant convects accross the graphite pebbles
+Comp_Cool.add_convection('mod', h=h_cool, area=a_pebbles)
+Comp_Cool.add_convection('refl', h=h_refl, area=a_refl)
+
+# The reflector convects with the coolant
+Comp_Refl.add_convection('cool', h=h_refl, area=a_refl)
