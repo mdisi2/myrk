@@ -41,7 +41,7 @@ tf = 15.0 * units.seconds
 ti = Timer(t0=t0, tf=tf, dt=dt)
 
 n_pg = 6
-n_dg = 0
+n_dg = 11
 
 # Fissioning Isotope
 fission_iso = "u235"
@@ -129,9 +129,9 @@ Pebble_graph = Graphite(name='pebgraphite')
 Fuel = Kernel(name="fuelkernel")
 
 Smear = Material(name='smear',
-                 k=ConductivityModel(model='constant',
+                k=ConductivityModel(model='constant',
                                      a =  0.26 * units.watt / units.meter / units.kelvin),
-                 rho=DensityModel(model='constant',
+                dm=DensityModel(model='constant',
                                   a =  1740 * units.kg / units.meter**3),
                 cp = 1650.0 * units.joule / units.kg / units.kelvin)
 
@@ -168,8 +168,8 @@ Comp_Cool = th.THComponent(name='cool',
 Comp_Smear = th.THComponent(name='smear',
                             mat=Smear,
                             vol= vol_smear_region,
-                            T0 = t_smear,
-                            alpha=alpha_total,
+                            T0=t_smear,
+                            alpha_temp=alpha_total,
                             timer=ti)
 
 components = [Comp_Cool,Comp_Refl,Comp_Mod,Comp_Fuel,Comp_Smear]
@@ -204,20 +204,20 @@ h_refl = ConvectiveModel(h0= 400 * units.watt /
 
 # External Reactivity Insetion
 rho_ext = StepReactivityInsertion(timer=ti,
-                                  t_step=1.0 * units.seconds,
+                                  t_step=0.0 * units.seconds,
                                   rho_init=0.0 * units.delta_k,
                                   rho_final=0.0 * units.delta_k)
 
 
 # Fuel only conducts to the smear
-Comp_Fuel.add_conduction('smear', area=a_smear, L=5 * units.millimeter)
+Comp_Fuel.add_conduction('smear', area=a_smear, L= 5 * units.cm)
 
 # The moderator graphite conducts to the smear and convects to the coolant    
-Comp_Mod.add_conduction('smear', area=a_smear, L=25 * units.millimeter)
+Comp_Mod.add_conduction('smear', area=a_smear, L= 1 * units.cm)
 Comp_Mod.add_convection('cool', h=h_cool, area=a_pebbles)
 
 # The smear conducts to the moderator graphite
-Comp_Smear.add_conduction('mod', area=a_smear, L=25 * units.centimeter)
+Comp_Smear.add_conduction('mod', area=a_smear, L=1 * units.centimeter)
 Comp_Smear.add_conduction('fuel', area=a_smear, L=5 * units.millimeter)
 
 
